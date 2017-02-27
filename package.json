@@ -1,0 +1,51 @@
+{
+    "name": "swift-webui",
+    "version": "1.0.0",
+    "description": "Web user interface for Swift programming.",
+    "author": "Dimitri Racordon",
+    "private": true,
+    "devDependencies": {
+        "babel-preset-es2015": "latest",
+        "babel-preset-react": "latest",
+        "babel-preset-stage-2": "latest",
+        "babelify": "latest",
+        "babel-register": "latest",
+        "browserify": "latest",
+        "clean-css": "latest",
+        "clean-css-cli": "latest",
+        "node-sass": "latest",
+        "uglify-js": "latest",
+        "watchify": "latest"
+    },
+    "dependencies": {
+      "codemirror": "latest",
+      "react": "latest",
+      "react-codemirror": "latest",
+      "react-dom": "latest",
+      "react-redux": "latest",
+      "react-router": "latest",
+      "redux": "latest",
+      "redux-logger": "latest",
+      "redux-promise": "latest",
+      "redux-thunk": "latest"
+    },
+    "babel": {
+        "presets": ["es2015", "react", "stage-2"]
+    },
+    "browserify": {
+        "transform": [
+            "babelify"
+        ]
+    },
+    "browserify-shim": {},
+    "scripts": {
+        "clean": "rm -f ./static/build/*.*",
+
+        "build-debug": "browserify src/main.js -o static/build/app.js -v -d",
+        "build": "browserify src/main.js | uglifyjs -cm > static/build/app.js",
+        "watch": "watchify src/main.js -o static/build/app.js -v -d",
+
+        "css-debug": "node-sass assets/css/main.scss static/build/main.css",
+        "css": "node-sass assets/css/main.scss | cleancss -o static/build/main.css"
+    }
+}
