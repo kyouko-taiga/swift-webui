@@ -5,7 +5,8 @@ import {
 
 
 const initialState = {
-    activeFile: null,
+    activeFile: 'README.md',
+    openedFiles: ['README.md', 'Sources/main.swift'],
     arborescence: {
         'LICENSE': 'LICENSE',
         'README.md': 'README.md',

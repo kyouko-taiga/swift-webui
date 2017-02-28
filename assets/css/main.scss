@@ -50,3 +50,52 @@ ul.sw-filetree {
         background-color: #5bc0de;
     }
 }
+
+.sw-editor-tabs > li {
+    min-width: 100px;
+
+    & > span {
+        position: relative;
+        display: block;
+        padding: 10px 15px;
+        line-height: 1.42857143;
+        border: 1px solid transparent;
+        border-bottom: none;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        .sw-close-span {
+            display: block;
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 42px;
+            padding: 8px;
+
+            .sw-close-button {
+                display: inline-block;
+                width: 24px;
+                padding: 2px;
+                opacity: 0;
+                transition: opacity 0.1s linear;
+                color: inherit;
+                background: white;
+            }
+        }
+
+        &:hover > .sw-close-span > .sw-close-button {
+            opacity: 1;
+        }
+    }
+
+    &.active > span {
+        background: #272822;
+        color: #f8f8f2;
+
+        .sw-close-span > .sw-close-button {
+            background: #272822;
+        }
+    }
+}

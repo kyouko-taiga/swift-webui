@@ -14,6 +14,7 @@ import 'codemirror/mode/swift/swift'
 import 'codemirror/mode/markdown/markdown'
 
 import { updateFileContent } from '../../actions/editor'
+import EditorTabs from './EditorTabs'
 
 
 class Editor extends React.Component {
@@ -38,11 +39,18 @@ class Editor extends React.Component {
         }
 
         return (
-            <CodeMirrorEditor
-                onChange={this.updateCode}
-                value={this.props.activeFile.content}
-                options={options}
-            />
+            <div>
+                <EditorTabs
+                    dispatch={this.props.dispatch}
+                    activeFile={this.props.activeFile}
+                    openedFiles={this.props.openedFiles}
+                />
+                <CodeMirrorEditor
+                    onChange={this.updateCode}
+                    value={this.props.activeFile.content}
+                    options={options}
+                />
+            </div>
         )
     }
 }
@@ -66,7 +74,8 @@ function stateToProps(state) {
     return {
         activeFile: (state.editor.activeFile != null)
             ? state.files[state.editor.activeFile]
-            : null
+            : null,
+        openedFiles: state.editor.openedFiles.map((filepath) => state.files[filepath])
     }
 }
 
