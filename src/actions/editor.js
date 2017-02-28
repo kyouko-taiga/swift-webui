@@ -1,5 +1,6 @@
 import {
     CHANGE_ACTIVE_FILE,
+    CLOSE_FILE,
     TOGGLE_DIRECTORY,
     UPDATE_FILE_CONTENT
 } from './types'
@@ -8,6 +9,14 @@ import {
 export function changeActiveFile(filepath) {
     return {
         type: CHANGE_ACTIVE_FILE,
+        payload: {filepath: filepath}
+    }
+}
+
+
+export function closeFile(filepath) {
+    return {
+        type: CLOSE_FILE,
         payload: {filepath: filepath}
     }
 }

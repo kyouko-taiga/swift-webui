@@ -16,12 +16,18 @@ export default class EditorTabs extends React.Component {
                 dispatch(editorActions.changeActiveFile(file.path))
             }
 
+            function handleClose(e) {
+                e.preventDefault()
+                e.stopPropagation()
+                dispatch(editorActions.closeFile(file.path))
+            }
+
             return (
                 <li key={file.path} onClick={handleClick} className={classname} style={style}>
                     <span>
                         { file.name }
                         <span className="sw-close-span">
-                            <a className="sw-close-button" href="#">
+                            <a onClick={handleClose} className="sw-close-button" href="#">
                                 <i className="fa fa-times" />
                             </a>
                         </span>
