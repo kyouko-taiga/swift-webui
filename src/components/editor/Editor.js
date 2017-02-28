@@ -1,14 +1,14 @@
 import React, { PropTypes } from 'react'
 import CodeMirror from 'react-codemirror'
 
-require('codemirror/mode/swift/swift')
+import 'codemirror/mode/swift/swift'
 
 
 export default class Editor extends React.Component {
     constructor() {
         super()
         this.state = {
-            code: '// Oh, swifty ...'
+            code: 'print("So swifty!")'
         }
 
         this.updateCode = this.updateCode.bind(this)
@@ -31,12 +31,14 @@ export default class Editor extends React.Component {
 
 Editor.propTypes = {
     mode: PropTypes.string,
+    theme: PropTypes.string,
     options: PropTypes.object
 }
 
 Editor.defaultProps = {
     options: {
         mode: 'swift',
+        theme: 'monokai',
         lineNumbers: true
     }
 }
