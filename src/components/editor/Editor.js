@@ -75,7 +75,7 @@ function stateToProps(state) {
         activeFile: (state.editor.activeFile != null)
             ? state.files[state.editor.activeFile]
             : null,
-        openedFiles: state.editor.openedFiles.map((filepath) => state.files[filepath])
+        openedFiles: state.editor.openedFiles.map((filePath) => state.files[filePath])
     }
 }
 

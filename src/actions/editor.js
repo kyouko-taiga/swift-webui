@@ -6,18 +6,18 @@ import {
 } from './types'
 
 
-export function changeActiveFile(filepath) {
+export function changeActiveFile(filePath) {
     return {
         type: CHANGE_ACTIVE_FILE,
-        payload: {filepath: filepath}
+        payload: {filePath: filePath}
     }
 }
 
 
-export function closeFile(filepath) {
+export function closeFile(filePath) {
     return {
         type: CLOSE_FILE,
-        payload: {filepath: filepath}
+        payload: {filePath: filePath}
     }
 }
 
@@ -33,11 +33,11 @@ export function toggleDirectory(path, collapsed) {
 }
 
 
-export function updateFileContent(filepath, content) {
+export function updateFileContent(filePath, content) {
     return {
         type: UPDATE_FILE_CONTENT,
         payload: {
-            filepath: filepath,
+            filePath: filePath,
             content: content
         }
     }

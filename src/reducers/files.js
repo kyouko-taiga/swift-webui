@@ -29,7 +29,7 @@ const initialState = {
 const files = (state = initialState, action) => {
     switch (action.type) {
     case UPDATE_FILE_CONTENT:
-        const file = state[action.payload.filepath]
+        const file = state[action.payload.filePath]
 
         return {
             ...state,

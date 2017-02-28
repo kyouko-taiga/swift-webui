@@ -65,14 +65,14 @@ const editor = (state = initialState, action) => {
     switch (action.type) {
     case CHANGE_ACTIVE_FILE:
         // Open the file if it wasn't already.
-        if (state.openedFiles.indexOf(action.payload.filepath) == -1) {
-            nextOpenedFiles.push(action.payload.filepath)
+        if (state.openedFiles.indexOf(action.payload.filePath) == -1) {
+            nextOpenedFiles.push(action.payload.filePath)
         }
 
-        return {...state, activeFile: action.payload.filepath, openedFiles: nextOpenedFiles}
+        return {...state, activeFile: action.payload.filePath, openedFiles: nextOpenedFiles}
 
     case CLOSE_FILE:
-        const fileIndex = state.openedFiles.indexOf(action.payload.filepath)
+        const fileIndex = state.openedFiles.indexOf(action.payload.filePath)
         if (fileIndex == -1) {
             return state
         }
@@ -83,7 +83,7 @@ const editor = (state = initialState, action) => {
 
         // If the file to be closed is the active file, select the next
         // opened file to replace it.
-        if (state.activeFile == action.payload.filepath) {
+        if (state.activeFile == action.payload.filePath) {
             if (nextOpenedFiles.length > 0) {
                 nextActiveFile = nextOpenedFiles[Math.max(fileIndex - 1, 0)]
             } else {

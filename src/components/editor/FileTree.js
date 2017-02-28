@@ -45,7 +45,7 @@ function makeNodes(arborescence, activeFile, dispatch, depth=0) {
             const file = arborescence[node]
             const classnames = classNames({'active': activeFile == file.path})
             const tag = file.__modified__
-                ? <span className="sw-tag sw-tag-modified"></span>
+                ? <span className="sw-tag sw-tag-modified" />
                 : null
 
             function handleClick(e) {
