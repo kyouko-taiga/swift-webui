@@ -1,14 +1,28 @@
-import { CHANGE_CURRENT_FILE, UPDATE_FILE_CONTENT } from './types'
+import {
+    CHANGE_ACTIVE_FILE,
+    TOGGLE_DIRECTORY,
+    UPDATE_FILE_CONTENT
+} from './types'
 
 
-export function changeCurrentFile(filepath) {
+export function changeActiveFile(filepath) {
     return {
-        type: CHANGE_CURRENT_FILE,
+        type: CHANGE_ACTIVE_FILE,
+        payload: {filepath: filepath}
+    }
+}
+
+
+export function toggleDirectory(path, collapsed) {
+    return {
+        type: TOGGLE_DIRECTORY,
         payload: {
-            filepath: filepath
+            path: path,
+            collapsed: collapsed
         }
     }
 }
+
 
 export function updateFileContent(filepath, content) {
     return {

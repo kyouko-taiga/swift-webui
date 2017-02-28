@@ -2,7 +2,7 @@ import classNames from 'classnames'
 import React from 'react'
 import { connect } from 'react-redux'
 
-import { changeCurrentFile } from '../../actions/editor'
+import * as editorActions from '../../actions/editor'
 
 
 class FileTree extends React.Component {
@@ -13,8 +13,8 @@ class FileTree extends React.Component {
 
     render() {
         const nodes = makeNodes(
-            createArborescence(this.props.files),
-            this.props.editor.currentFile,
+            this.props.files,
+            this.props.editor.activeFile,
             this.props.dispatch)
 
         return (
@@ -22,7 +22,7 @@ class FileTree extends React.Component {
                 <div className="panel panel-info">
                     <div className="panel-heading">
                         <i className="fa fa-fw fa-code-fork" />
-                        { this.props.repository.name }/{ this.props.repository.currentBranch }
+                        { this.props.repository.name }/{ this.props.repository.activeBranch }
                     </div>
                     <ul className="sw-filetree">
                         { nodes }
@@ -35,28 +35,7 @@ class FileTree extends React.Component {
 }
 
 
-function createArborescence(files) {
-    let arborescence = {}
-
-    for (let path in files) {
-        // Walk the arborescence and create any missing subdirectories.
-        let directory = arborescence
-        for (let subdirectory of path.split('/').slice(0, -1)) {
-            if (!(subdirectory in directory)) {
-                directory[subdirectory] = {}
-            }
-            directory = directory[subdirectory]
-        }
-
-        // Place the file in the arborescence.
-        directory[path] = files[path]
-    }
-
-    return arborescence
-}
-
-
-function makeNodes(arborescence, currentFile, dispatch, depth=0) {
+function makeNodes(arborescence, activeFile, dispatch, depth=0) {
     let nodes = []
     const indentation = Array(depth).fill().map(
         (_, i) => <span key={i} className="sw-filetree-indent"></span>)
@@ -64,15 +43,15 @@ function makeNodes(arborescence, currentFile, dispatch, depth=0) {
     for (let node of Object.keys(arborescence).sort()) {
         if ('mimetype' in arborescence[node]) {
             const file = arborescence[node]
-            function handleClick(e) {
-                e.preventDefault()
-                dispatch(changeCurrentFile(file.path))
-            }
-
-            const classnames = classNames({'active': currentFile == file.path})
+            const classnames = classNames({'active': activeFile == file.path})
             const tag = file.__modified__
                 ? <span className="sw-tag sw-tag-modified"></span>
                 : null
+
+            function handleClick(e) {
+                e.preventDefault()
+                dispatch(editorActions.changeActiveFile(file.path))
+            }
 
             nodes.push(
                 <li key={`${node}${depth}`} onClick={handleClick} className={classnames}>
@@ -82,14 +61,26 @@ function makeNodes(arborescence, currentFile, dispatch, depth=0) {
                 </li>
             )
         } else {
+            const directory = arborescence[node]
+            const collapsed = directory.collapsed
+            const iconClass = 'fa fa-fw fa-folder' + (!collapsed ? '-open' : '') + '-o'
+
+            function handleClick(e) {
+                e.preventDefault()
+                dispatch(editorActions.toggleDirectory(directory.path, !directory.collapsed))
+            }
+
             nodes.push(
-                <li key={`${node}${depth}`}>
+                <li key={`${node}${depth}`} onClick={handleClick}>
                     { indentation }
-                    <i className="fa fa-fw fa-folder-open-o" /> { node }
+                    <i className={iconClass} /> { node }
                 </li>
             )
 
-            nodes = nodes.concat(makeNodes(arborescence[node], currentFile, dispatch, depth + 1))
+            if (!collapsed) {
+                nodes = nodes.concat(makeNodes(
+                    arborescence[node].files, activeFile, dispatch, depth + 1))
+            }
         }
     }
 
@@ -97,10 +88,22 @@ function makeNodes(arborescence, currentFile, dispatch, depth=0) {
 }
 
 
+// The arborescence object in the editor's store only keeps references
+// (file paths) to the actual files. This function dereferences those
+// references to actual file entity they point to.
+function dereferencedArborescence(arborescence, state) {
+    return {...Object.map(arborescence, (key, value) => {
+        return (typeof value == 'string')
+            ? [key, state.files[value]]
+            : [key, {...value, files: dereferencedArborescence(value.files, state)}]
+    })}
+}
+
+
 function stateToProps(state) {
     return {
         repository: state.repository,
-        files: state.files,
+        files: dereferencedArborescence(state.editor.arborescence, state),
         editor: state.editor
     }
 }

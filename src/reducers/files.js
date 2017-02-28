@@ -3,7 +3,7 @@ import { UPDATE_FILE_CONTENT } from '../actions/types'
 
 const initialState = {
     'README.md': {
-        mimetype: 'text/markdown',
+        mimetype: 'text/x-markdown',
         path: 'README.md',
         name: 'README.md',
         content: 'This is a README file.',

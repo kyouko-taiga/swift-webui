@@ -60,7 +60,7 @@ Editor.defaultProps = {
 
 function stateToProps(state) {
     return {
-        file: state.files[state.editor.currentFile]
+        file: state.files[state.editor.activeFile]
     }
 }
 

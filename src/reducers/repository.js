@@ -2,7 +2,7 @@
 const initialState = {
     id: '12345',
     name: 'swift-webui',
-    currentBranch: 'master'
+    activeBranch: 'master'
 }
 
 
