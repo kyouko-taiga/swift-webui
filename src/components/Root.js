@@ -8,7 +8,7 @@ class Root extends React.Component {
             <div className="container-fluid">
                 <div className="row">
                     <div className="col-sm-12">
-                        {this.props.children}
+                        { this.props.children }
                     </div>
                 </div>
             </div>

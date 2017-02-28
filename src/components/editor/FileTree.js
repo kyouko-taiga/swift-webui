@@ -2,11 +2,20 @@ import classNames from 'classnames'
 import React from 'react'
 import { connect } from 'react-redux'
 
+import { changeCurrentFile } from '../../actions/editor'
+
 
 class FileTree extends React.Component {
 
+    constructor() {
+        super()
+    }
+
     render() {
-        const nodes = makeNodes(createArborescence(this.props.files))
+        const nodes = makeNodes(
+            createArborescence(this.props.files),
+            this.props.editor.currentFile,
+            this.props.dispatch)
 
         return (
             <div>
@@ -47,28 +56,40 @@ function createArborescence(files) {
 }
 
 
-function makeNodes(arborescence, depth=0) {
+function makeNodes(arborescence, currentFile, dispatch, depth=0) {
     let nodes = []
     const indentation = Array(depth).fill().map(
         (_, i) => <span key={i} className="sw-filetree-indent"></span>)
 
     for (let node of Object.keys(arborescence).sort()) {
         if ('mimetype' in arborescence[node]) {
+            const file = arborescence[node]
+            function handleClick(e) {
+                e.preventDefault()
+                dispatch(changeCurrentFile(file.path))
+            }
+
+            const classnames = classNames({'active': currentFile == file.path})
+            const tag = file.__modified__
+                ? <span className="sw-tag sw-tag-modified"></span>
+                : null
+
             nodes.push(
-                <li key={`${node}${depth}`}>
+                <li key={`${node}${depth}`} onClick={handleClick} className={classnames}>
                     { indentation }
-                    <i className="fa fa-fw fa-file-text-o" /> { arborescence[node].name }
+                    <i className="fa fa-fw fa-file-text-o" /> { file.name }
+                    <div className="pull-right">{ tag }</div>
                 </li>
             )
         } else {
             nodes.push(
                 <li key={`${node}${depth}`}>
                     { indentation }
-                    <i className="fa fa-fw fa-folder-o" /> { node }
+                    <i className="fa fa-fw fa-folder-open-o" /> { node }
                 </li>
             )
 
-            nodes = nodes.concat(makeNodes(arborescence[node], depth + 1))
+            nodes = nodes.concat(makeNodes(arborescence[node], currentFile, dispatch, depth + 1))
         }
     }
 

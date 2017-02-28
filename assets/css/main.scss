@@ -37,3 +37,16 @@ ul.sw-filetree {
         width: 1.28571429em;
     }
 }
+
+
+.sw-tag {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #999;
+
+    &.sw-tag-modified {
+        background-color: #5bc0de;
+    }
+}
