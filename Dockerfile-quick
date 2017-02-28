@@ -1,0 +1,8 @@
+FROM webui-dev
+
+ADD . /src/webui
+RUN   cd /src/webui/ \
+  &&  cp lapis/*        / \
+  &&  cp -r assets      /assets \
+  &&  luarocks make     rockspec/webui-master-1.rockspec \
+  &&  rm -rf            /src/webui
