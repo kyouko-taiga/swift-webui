@@ -14,6 +14,8 @@ import 'codemirror/mode/swift/swift'
 import 'codemirror/mode/markdown/markdown'
 
 import { updateFileContent } from '../../actions/editor'
+import { growlError } from '../../actions/growls'
+import { patch as patchFile } from '../../actions/files'
 import EditorTabs from './EditorTabs'
 
 
@@ -21,7 +23,29 @@ class Editor extends React.Component {
     constructor() {
         super()
 
+        this.saveCode = this.saveCode.bind(this)
         this.updateCode = this.updateCode.bind(this)
+    }
+
+    componentDidMount() {
+        document.addEventListener('keydown', this.saveCode)
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('keydown', this.saveCode)
+    }
+
+    saveCode(e) {
+        if ((e.keyCode == 83) && (navigator.platform.match('Mac') ? e.metaKey : e.ctrlKey)) {
+            e.preventDefault()
+            this.props.dispatch(patchFile(this.props.activeFile))
+                .then((action) => {
+                    if (action.error) {
+                        this.props.dispatch(growlError(
+                            action.payload, `Failed to save '${this.props.activeFile.name}'.`))
+                    }
+                })
+        }
     }
 
     updateCode(newCode) {

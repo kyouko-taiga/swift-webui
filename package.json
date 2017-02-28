@@ -18,8 +18,11 @@
         "watchify": "latest"
     },
     "dependencies": {
+        "bluebird": "latest",
         "classnames": "latest",
         "codemirror": "latest",
+        "isomorphic-fetch": "latest",
+        "normalizr": "latest",
         "react": "latest",
         "react-addons-css-transition-group": "latest",
         "react-codemirror": "latest",

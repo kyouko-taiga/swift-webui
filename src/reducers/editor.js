@@ -1,7 +1,7 @@
 import {
-    CHANGE_ACTIVE_FILE,
-    CLOSE_FILE,
-    TOGGLE_DIRECTORY
+    EDITOR_CHANGE_ACTIVE_FILE,
+    EDITOR_CLOSE_FILE,
+    EDITOR_TOGGLE_DIRECTORY
 } from '../actions/types'
 
 
@@ -63,7 +63,7 @@ const editor = (state = initialState, action) => {
     let nextOpenedFiles = state.openedFiles.slice()
 
     switch (action.type) {
-    case CHANGE_ACTIVE_FILE:
+    case EDITOR_CHANGE_ACTIVE_FILE:
         // Open the file if it wasn't already.
         if (state.openedFiles.indexOf(action.payload.filePath) == -1) {
             nextOpenedFiles.push(action.payload.filePath)
@@ -71,7 +71,7 @@ const editor = (state = initialState, action) => {
 
         return {...state, activeFile: action.payload.filePath, openedFiles: nextOpenedFiles}
 
-    case CLOSE_FILE:
+    case EDITOR_CLOSE_FILE:
         const fileIndex = state.openedFiles.indexOf(action.payload.filePath)
         if (fileIndex == -1) {
             return state
@@ -93,7 +93,7 @@ const editor = (state = initialState, action) => {
 
         return {...state, activeFile: nextActiveFile, openedFiles: nextOpenedFiles}
 
-    case TOGGLE_DIRECTORY:
+    case EDITOR_TOGGLE_DIRECTORY:
         return {
             ...state,
             arborescence: toggleDirectory(

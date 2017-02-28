@@ -1,14 +1,14 @@
 import {
-    CHANGE_ACTIVE_FILE,
-    CLOSE_FILE,
-    TOGGLE_DIRECTORY,
-    UPDATE_FILE_CONTENT
+    EDITOR_CHANGE_ACTIVE_FILE,
+    EDITOR_CLOSE_FILE,
+    EDITOR_TOGGLE_DIRECTORY,
+    EDITOR_UPDATE_FILE_CONTENT
 } from './types'
 
 
 export function changeActiveFile(filePath) {
     return {
-        type: CHANGE_ACTIVE_FILE,
+        type: EDITOR_CHANGE_ACTIVE_FILE,
         payload: {filePath: filePath}
     }
 }
@@ -16,7 +16,7 @@ export function changeActiveFile(filePath) {
 
 export function closeFile(filePath) {
     return {
-        type: CLOSE_FILE,
+        type: EDITOR_CLOSE_FILE,
         payload: {filePath: filePath}
     }
 }
@@ -24,7 +24,7 @@ export function closeFile(filePath) {
 
 export function toggleDirectory(path, collapsed) {
     return {
-        type: TOGGLE_DIRECTORY,
+        type: EDITOR_TOGGLE_DIRECTORY,
         payload: {
             path: path,
             collapsed: collapsed
@@ -35,7 +35,7 @@ export function toggleDirectory(path, collapsed) {
 
 export function updateFileContent(filePath, content) {
     return {
-        type: UPDATE_FILE_CONTENT,
+        type: EDITOR_UPDATE_FILE_CONTENT,
         payload: {
             filePath: filePath,
             content: content
