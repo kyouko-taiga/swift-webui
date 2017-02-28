@@ -18,16 +18,17 @@
         "watchify": "latest"
     },
     "dependencies": {
-      "codemirror": "latest",
-      "react": "latest",
-      "react-codemirror": "latest",
-      "react-dom": "latest",
-      "react-redux": "latest",
-      "react-router": "latest",
-      "redux": "latest",
-      "redux-logger": "latest",
-      "redux-promise": "latest",
-      "redux-thunk": "latest"
+        "classnames": "latest",
+        "codemirror": "latest",
+        "react": "latest",
+        "react-codemirror": "latest",
+        "react-dom": "latest",
+        "react-redux": "latest",
+        "react-router": "latest",
+        "redux": "latest",
+        "redux-logger": "latest",
+        "redux-promise": "latest",
+        "redux-thunk": "latest"
     },
     "babel": {
         "presets": ["es2015", "react", "stage-2"]
