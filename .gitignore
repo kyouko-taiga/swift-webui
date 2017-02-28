@@ -1,3 +1,7 @@
 # Browserify
 node_modules/
 build/
+
+# Lua stuff:
+.environment
+rockspec/*.src.rock
