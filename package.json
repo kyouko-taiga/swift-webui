@@ -21,6 +21,7 @@
         "classnames": "latest",
         "codemirror": "latest",
         "react": "latest",
+        "react-addons-css-transition-group": "latest",
         "react-codemirror": "latest",
         "react-dom": "latest",
         "react-redux": "latest",

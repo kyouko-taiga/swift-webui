@@ -1,3 +1,6 @@
+export const ADD_GROWL = 'ADD_GROWL'
+export const DISMISS_GROWL = 'DISMISS_GROWL'
+
 export const CHANGE_ACTIVE_FILE = 'CHANGE_ACTIVE_FILE'
 export const CLOSE_FILE = 'CLOSE_FILE'
 export const TOGGLE_DIRECTORY = 'TOGGLE_DIRECTORY'

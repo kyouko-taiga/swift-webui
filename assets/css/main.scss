@@ -2,6 +2,11 @@
 @import "node_modules/codemirror/theme/monokai.css";
 @import "node_modules/codemirror/lib/codemirror.css";
 
+@import "vendor/bootstrap/stylesheets/bootstrap";
+
+@import "partials/growls";
+
+
 body {
     margin-top: 20px;
 }

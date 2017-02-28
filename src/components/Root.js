@@ -1,6 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
 
+import Growls from './growls'
+
 
 class Root extends React.Component {
     render() {
@@ -11,6 +13,7 @@ class Root extends React.Component {
                         { this.props.children }
                     </div>
                 </div>
+                <Growls />
             </div>
         )
     }
