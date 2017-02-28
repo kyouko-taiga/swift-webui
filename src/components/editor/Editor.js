@@ -24,19 +24,23 @@ class Editor extends React.Component {
     }
 
     updateCode(newCode) {
-        this.props.dispatch(updateFileContent(this.props.file.path, newCode))
+        this.props.dispatch(updateFileContent(this.props.activeFile.path, newCode))
     }
 
     render() {
+        if (this.props.activeFile == null) {
+            return <div>No file selected.</div>
+        }
+
         const options = {
             ...this.props.options,
-            mode: this.props.file.mimetype
+            mode: this.props.activeFile.mimetype
         }
 
         return (
             <CodeMirrorEditor
                 onChange={this.updateCode}
-                value={this.props.file.content}
+                value={this.props.activeFile.content}
                 options={options}
             />
         )
@@ -60,7 +64,9 @@ Editor.defaultProps = {
 
 function stateToProps(state) {
     return {
-        file: state.files[state.editor.activeFile]
+        activeFile: (state.editor.activeFile != null)
+            ? state.files[state.editor.activeFile]
+            : null
     }
 }
 
