@@ -17,3 +17,23 @@ body {
 .btn {
     border-radius: 0;
 }
+
+ul.sw-filetree {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+        padding: 5px 10px;
+        cursor: pointer;
+
+        &:hover, &.active {
+            background-color: #eee;
+        }
+    }
+
+    .sw-filetree-indent {
+        display: inline-block;
+        width: 1.28571429em;
+    }
+}
