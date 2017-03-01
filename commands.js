@@ -1,7 +1,7 @@
 import * as Util from './util';
 import { Errors } from './const';
 
-const helpCommands = ['clear', 'ls', 'cat', 'mkdir', 'cd', 'pwd', 'echo', 'printenv', 'whoami', 'rm'];
+const helpCommands = ['clear', 'ls', 'cat', 'mkdir', 'cd', 'pwd', 'echo', 'printenv', 'whoami', 'rm', 'sleep'];
 
 export const help = {
     exec: (state) => {
@@ -170,5 +170,15 @@ export const rm = {
         } else {
             return Util.appendError(state, Errors.NO_SUCH_FILE, path);
         }
+    },
+};
+
+export const sleep = {
+    exec: (state, { flags, args }) => {
+        let duration = parseFloat(args[0]);
+        if (isNaN(duration)) {
+            duration = 0;
+        }
+        return new Promise((resolve) => setTimeout(() => resolve(state), duration * 1000));
     },
 };
