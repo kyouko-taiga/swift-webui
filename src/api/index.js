@@ -1,5 +1,5 @@
 import Bluebird from 'bluebird'
-import { arrayOf, normalize } from 'normalizr'
+import { normalize } from 'normalizr'
 
 import { API_ROOT } from '../constants'
 
@@ -56,7 +56,7 @@ const wrapper = {
     repositories: {
         list: () => ({
             get: () => fetch(`${API_ROOT}/repositories/`)
-                .then((resp) => handleResponse(resp, arrayOf(schemas.repository)))
+                .then((resp) => handleResponse(resp, [schemas.repository]))
         }),
         select: (repositoryId) => ({
             get: () => fetch(`${API_ROOT}/repositories/${repositoryId}`)
@@ -64,7 +64,7 @@ const wrapper = {
             files: {
                 list: () => ({
                     get: () => fetch(`${API_ROOT}/repositories/${repositoryId}/files/`)
-                        .then((resp) => handleResponse(resp, arrayOf(schemas.file)))
+                        .then((resp) => handleResponse(resp, [schemas.file]))
                 }),
                 select: (filePath) => ({
                     get: () => fetch(`${API_ROOT}/repositories/${repositoryId}/files/${filePath}`)

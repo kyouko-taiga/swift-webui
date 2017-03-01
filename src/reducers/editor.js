@@ -1,45 +1,15 @@
 import {
     EDITOR_CHANGE_ACTIVE_FILE,
     EDITOR_CLOSE_FILE,
-    EDITOR_TOGGLE_DIRECTORY
+    EDITOR_TOGGLE_DIRECTORY,
+    LIST_FILES
 } from '../actions/types'
 
 
 const initialState = {
-    activeFile: 'README.md',
-    openedFiles: ['README.md', 'Sources/main.swift'],
-    arborescence: {
-        'LICENSE': 'LICENSE',
-        'README.md': 'README.md',
-        'Sources': {
-            path: 'Sources/',
-            collapsed: false,
-            files: {
-                'main.swift': 'Sources/main.swift'
-            }
-        }
-    }
-}
-
-
-function createArborescence(files) {
-    let arborescence = {}
-
-    for (let path in files) {
-        // Walk the arborescence and create any missing subdirectories.
-        let directory = arborescence
-        for (let subdirectory of path.split('/').slice(0, -1)) {
-            if (!(subdirectory in directory)) {
-                directory[subdirectory] = {}
-            }
-            directory = directory[subdirectory]
-        }
-
-        // Place the file in the arborescence.
-        directory[path] = files[path]
-    }
-
-    return arborescence
+    activeFile: null,
+    openedFiles: [],
+    arborescence: {}
 }
 
 
@@ -98,6 +68,40 @@ const editor = (state = initialState, action) => {
             ...state,
             arborescence: toggleDirectory(
                 state.arborescence, action.payload.path, action.payload.collapsed)
+        }
+
+    case LIST_FILES:
+        if ((action.meta.status == 'pending') || !action.payload.entities) {
+            return state
+        }
+
+        // Rebuild the file arborescence.
+        let arborescence = {}
+        const files = Object.map(action.payload.entities['files'], (key, value) =>
+            [key, {...value, __modified__: false}])
+
+        for (let path in files) {
+            // Walk the arborescence and create any missing subdirectories.
+            let directory = arborescence
+            const components = path.split('/').slice(0, -1)
+            components.map((subdirectory, index) => {
+                if (!(subdirectory in directory)) {
+                    directory[subdirectory] = {
+                        path: components.slice(0, index + 1).join('/') + '/',
+                        collapsed: true,
+                        files: {}
+                    }
+                }
+                directory = directory[subdirectory].files
+            })
+
+            // Place the file in the arborescence.
+            directory[path] = files[path].path
+        }
+
+        return {
+            ...state,
+            arborescence: arborescence
         }
 
     default:

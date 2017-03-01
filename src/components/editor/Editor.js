@@ -15,11 +15,12 @@ import 'codemirror/mode/markdown/markdown'
 
 import { updateFileContent } from '../../actions/editor'
 import { growlError } from '../../actions/growls'
-import { patch as patchFile } from '../../actions/files'
+import { list as listFiles, patch as patchFile } from '../../actions/files'
 import EditorTabs from './EditorTabs'
 
 
 class Editor extends React.Component {
+
     constructor() {
         super()
 
@@ -77,6 +78,7 @@ class Editor extends React.Component {
             </div>
         )
     }
+
 }
 
 Editor.propTypes = {
@@ -94,8 +96,39 @@ Editor.defaultProps = {
 }
 
 
+class EditorContainer extends React.Component {
+
+    constructor() {
+        super()
+        this.state = {
+            isFetching: true,
+            error: null
+        }
+    }
+
+    componentDidMount() {
+        this.setState({isFetching: true})
+
+        this.props.dispatch(listFiles(this.props.repository.id))
+            .then((action) => {
+                this.setState({
+                    isFetching: false,
+                    error: action.error ? action.payload : null
+                })
+            })
+    }
+
+    render() {
+        return <Editor {...this.props} {...this.state} />
+    }
+
+
+}
+
+
 function stateToProps(state) {
     return {
+        repository: state.repository,
         activeFile: (state.editor.activeFile != null)
             ? state.files[state.editor.activeFile]
             : null,
@@ -104,4 +137,4 @@ function stateToProps(state) {
 }
 
 
-export default connect(stateToProps)(Editor)
+export default connect(stateToProps)(EditorContainer)

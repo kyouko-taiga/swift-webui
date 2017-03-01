@@ -5,6 +5,7 @@ import FileTree from './FileTree'
 
 
 export default class EditorView extends React.Component {
+
     render() {
         return (
             <div className="row">
@@ -17,4 +18,5 @@ export default class EditorView extends React.Component {
             </div>
         )
     }
+
 }
