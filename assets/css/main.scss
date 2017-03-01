@@ -2,6 +2,11 @@
 @import "node_modules/codemirror/theme/monokai.css";
 @import "node_modules/codemirror/lib/codemirror.css";
 
+@import "vendor/bootstrap/stylesheets/bootstrap";
+
+@import "partials/growls";
+
+
 body {
     margin-top: 20px;
 }
@@ -69,13 +74,18 @@ ul.sw-filetree {
             position: absolute;
             right: 0;
             top: 0;
-            height: 42px;
             padding: 8px;
+
+            & > * {
+                position: absolute;
+                right: 0;
+                width: 24px;
+                padding: 2px;
+                text-align: center;
+            }
 
             .sw-close-button {
                 display: inline-block;
-                width: 24px;
-                padding: 2px;
                 opacity: 0;
                 transition: opacity 0.1s linear;
                 color: inherit;

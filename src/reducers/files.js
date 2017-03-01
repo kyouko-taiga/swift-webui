@@ -1,35 +1,28 @@
-import { UPDATE_FILE_CONTENT } from '../actions/types'
+import {
+    LIST_FILES,
+    GET_FILE,
+    PATCH_FILE,
+    EDITOR_UPDATE_FILE_CONTENT
+} from '../actions/types'
 
 
-const initialState = {
-    'README.md': {
-        mimetype: 'text/x-markdown',
-        path: 'README.md',
-        name: 'README.md',
-        content: 'This is a README file.',
-        __modified__: false
-    },
-    'LICENSE': {
-        mimetype: 'text/plain',
-        name: 'LICENSE',
-        path: 'LICENSE',
-        content: 'MIT LICENSE',
-        __modified__: false
-    },
-    'Sources/main.swift': {
-        mimetype: 'text/x-swift',
-        name: 'main.swift',
-        path: 'Sources/main.swift',
-        content: 'print("So swifty!")',
-        __modified__: false
-    }
-}
-
-
-const files = (state = initialState, action) => {
+const files = (state = {}, action) => {
     switch (action.type) {
-    case UPDATE_FILE_CONTENT:
-        const file = state[action.payload.filepath]
+    case PATCH_FILE: // TODO: Handle optimistic update.
+    case GET_FILE:
+    case LIST_FILES:
+        if ((action.meta.status == 'pending') || !action.payload.entities) {
+            return state
+        }
+
+        return {
+            ...state,
+            ...Object.map(action.payload.entities['files'], (key, value) =>
+            [key, {...value, __modified__: false}])
+        }
+
+    case EDITOR_UPDATE_FILE_CONTENT:
+        const file = state[action.payload.filePath]
 
         return {
             ...state,

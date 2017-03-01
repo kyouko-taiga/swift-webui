@@ -14,14 +14,39 @@ import 'codemirror/mode/swift/swift'
 import 'codemirror/mode/markdown/markdown'
 
 import { updateFileContent } from '../../actions/editor'
+import { growlError } from '../../actions/growls'
+import { list as listFiles, patch as patchFile } from '../../actions/files'
 import EditorTabs from './EditorTabs'
 
 
 class Editor extends React.Component {
+
     constructor() {
         super()
 
+        this.saveCode = this.saveCode.bind(this)
         this.updateCode = this.updateCode.bind(this)
+    }
+
+    componentDidMount() {
+        document.addEventListener('keydown', this.saveCode)
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('keydown', this.saveCode)
+    }
+
+    saveCode(e) {
+        if ((e.keyCode == 83) && (navigator.platform.match('Mac') ? e.metaKey : e.ctrlKey)) {
+            e.preventDefault()
+            this.props.dispatch(patchFile(this.props.activeFile))
+                .then((action) => {
+                    if (action.error) {
+                        this.props.dispatch(growlError(
+                            action.payload, `Failed to save '${this.props.activeFile.name}'.`))
+                    }
+                })
+        }
     }
 
     updateCode(newCode) {
@@ -53,6 +78,7 @@ class Editor extends React.Component {
             </div>
         )
     }
+
 }
 
 Editor.propTypes = {
@@ -70,14 +96,45 @@ Editor.defaultProps = {
 }
 
 
+class EditorContainer extends React.Component {
+
+    constructor() {
+        super()
+        this.state = {
+            isFetching: true,
+            error: null
+        }
+    }
+
+    componentDidMount() {
+        this.setState({isFetching: true})
+
+        this.props.dispatch(listFiles(this.props.repository.id))
+            .then((action) => {
+                this.setState({
+                    isFetching: false,
+                    error: action.error ? action.payload : null
+                })
+            })
+    }
+
+    render() {
+        return <Editor {...this.props} {...this.state} />
+    }
+
+
+}
+
+
 function stateToProps(state) {
     return {
+        repository: state.repository,
         activeFile: (state.editor.activeFile != null)
             ? state.files[state.editor.activeFile]
             : null,
-        openedFiles: state.editor.openedFiles.map((filepath) => state.files[filepath])
+        openedFiles: state.editor.openedFiles.map((filePath) => state.files[filePath])
     }
 }
 
 
-export default connect(stateToProps)(Editor)
+export default connect(stateToProps)(EditorContainer)

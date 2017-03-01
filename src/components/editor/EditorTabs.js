@@ -9,6 +9,9 @@ export default class EditorTabs extends React.Component {
         const openedFiles = this.props.openedFiles.map((file) => {
             const style = {width: `${100 / this.props.openedFiles.length}%`}
             const classname = (file == this.props.activeFile) ? 'active' : ''
+            const tag = file.__modified__
+                ? <span><span className="sw-tag sw-tag-modified" /></span>
+                : null
 
             const dispatch = this.props.dispatch
             function handleClick(e) {
@@ -27,6 +30,7 @@ export default class EditorTabs extends React.Component {
                     <span>
                         { file.name }
                         <span className="sw-close-span">
+                            { tag }
                             <a onClick={handleClose} className="sw-close-button" href="#">
                                 <i className="fa fa-times" />
                             </a>

@@ -5,3 +5,6 @@ build/
 # Lua stuff:
 .environment
 rockspec/*.src.rock
+
+# macOS
+.DS_Store

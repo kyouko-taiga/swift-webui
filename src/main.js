@@ -1,3 +1,4 @@
+import './polyfills/fetch'
 import './polyfills/object'
 
 import React from 'react'
