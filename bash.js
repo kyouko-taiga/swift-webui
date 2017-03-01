@@ -12,6 +12,26 @@ export default class Bash {
     }
 
     /*
+     * This adds the given <input> into the terminal history
+     *
+     * @param {string} input - the user input
+     * @param {Object} state - the current terminal state
+     * @returns {Object} the new terminal state
+     */
+    pushInput(input, currentState) {
+        this.prevCommands.push(input);
+        this.prevCommandsIndex = this.prevCommands.length;
+
+        // Append input to history
+        return Object.assign({}, currentState, {
+            history: currentState.history.concat({
+                cwd: currentState.cwd,
+                value: input,
+            }),
+        });
+    }
+
+    /*
      * This parses and executes the given <input> and returns an updated
      * state object.
      *
@@ -20,19 +40,8 @@ export default class Bash {
      * @returns {Object} a promise that resolves to the new terminal state
      */
     execute(input, currentState) {
-        this.prevCommands.push(input);
-        this.prevCommandsIndex = this.prevCommands.length;
-
-        // Append input to history
-        const newState = Object.assign({}, currentState, {
-            history: currentState.history.concat({
-                cwd: currentState.cwd,
-                value: input,
-            }),
-        });
-
         const commandList = BashParser.parse(input);
-        return this.runCommands(commandList, newState);
+        return this.runCommands(commandList, currentState);
     }
 
     /*

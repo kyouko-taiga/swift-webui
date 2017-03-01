@@ -22,6 +22,7 @@ export default class Terminal extends Component {
             history: history.slice(),
             structure: Object.assign({}, structure),
             cwd: '',
+            isBusy: false,
             _bashExecutionsObserver: null,
         };
         this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -103,6 +104,8 @@ export default class Terminal extends Component {
             if (this.ctrlPressed) {
                 let observer = this.Bash.execute('clear', this.state)
                     .then((newState) => { this.setState(newState); });
+
+                // Test instrumentation
                 if (this.props._observeBashExecutions) {
                     this.setState({ _bashExecutionsObserver: observer });
                 }
@@ -129,14 +132,22 @@ export default class Terminal extends Component {
     handleSubmit(evt) {
         evt.preventDefault();
 
-        // Execute command
         const input = evt.target[0].value;
-        let observer = this.Bash.execute(input, this.state)
-            .then((newState) => { this.setState(newState); });
-        if (this.props._observeBashExecutions) {
-            this.setState({ _bashExecutionsObserver: observer });
-        }
-        this.refs.input.value = '';
+
+        this.setState(
+            Object.assign({}, this.Bash.pushInput(input, this.state), {isBusy: true}),
+            () => {
+                // Execute command
+                let observer = this.Bash.execute(input, this.state).then((newState) => {
+                    this.setState(Object.assign({}, newState, {isBusy: false}));
+                });
+                this.refs.input.value = '';
+
+                // Test instrumentation
+                if (this.props._observeBashExecutions) {
+                    this.setState({ _bashExecutionsObserver: observer });
+                }
+            });
     }
 
     renderHistoryItem(style) {
@@ -152,6 +163,13 @@ export default class Terminal extends Component {
         const { onClose, onExpand, onMinimize, prefix, theme } = this.props;
         const { history, cwd } = this.state;
         const style = Styles[theme] || Styles.light;
+
+        // Hide the prompt while the terminal is busy
+        let formStyle = Object.assign({}, style.form);
+        if (this.state.isBusy) {
+            formStyle.display = 'none';
+        }
+
         return (
             <div className="ReactBash" style={style.ReactBash}>
                 <div style={style.header}>
@@ -161,7 +179,7 @@ export default class Terminal extends Component {
                 </div>
                 <div style={style.body} onClick={() => this.refs.input.focus()}>
                     {history.map(this.renderHistoryItem(style))}
-                    <form onSubmit={evt => this.handleSubmit(evt)} style={style.form}>
+                    <form onSubmit={evt => this.handleSubmit(evt)} style={formStyle}>
                         <span style={style.prefix}>{`${prefix} ~${cwd} $`}</span>
                         <input
                           autoComplete="off"
