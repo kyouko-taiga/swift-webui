@@ -73,18 +73,18 @@ export default class Bash {
                         errorOccurred = errorOccurred || (newState && newState.error);
                         return errorOccurred
                             ? newState
-                            : Promise.resolve(this.commands[command.name].exec(newState, command));
+                            : Promise.resolve(this.commands[command.name].exec(newState, command))
+                                .catch((error) => {
+                                    errorOccurred = true;
+                                    const message = (error && error.message)
+                                        ? error.message
+                                        : `command ${command.name} failed`;
+                                    return Util.appendError(newState, '$1', message);
+                                });
                     } else {
                         errorOccurred = true;
                         return Util.appendError(newState, Errors.COMMAND_NOT_FOUND, command.name);
                     }
-                })
-                .catch((error) => {
-                    errorOccurred = true;
-                    const message = (error && error.message)
-                        ? error.message
-                        : `command ${command.name} failed`;
-                    return Util.appendError(newState, '$1', `command ${command.name} failed`);
                 });
         };
 
