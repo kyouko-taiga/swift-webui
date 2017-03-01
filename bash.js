@@ -17,7 +17,7 @@ export default class Bash {
      *
      * @param {string} input - the user input
      * @param {Object} state - the current terminal state
-     * @returns {Object} the new terminal state
+     * @returns {Object} a promise that resolves to the new terminal state
      */
     execute(input, currentState) {
         this.prevCommands.push(input);
@@ -43,34 +43,48 @@ export default class Bash {
      *
      * @param {Array} commands - the commands to run
      * @param {Object} state - the terminal state
-     * @returns {Object} the new terminal state
+     * @returns {Object} a promise that resolves to the new terminal state
      */
     runCommands(commands, state) {
         let errorOccurred = false;
 
         /*
-         * This function executes a single command and marks whether an error
-         * occurred. If an error occurs, the following dependent commands should
-         * not be run.
+         * This function executes a single command and wraps its result into a
+         * a promise. If the promise fails, or if it returns an erroneous
+         * state, the following dependent commands should not be run.
          */
-        const reducer = (newState, command) => {
+        const reducer = (previousCommand, command) => {
             if (command.name === '') {
-                return newState;
-            } else if (this.commands[command.name]) {
-                const nextState = this.commands[command.name].exec(newState, command);
-                errorOccurred = errorOccurred || (nextState && nextState.error);
-                return nextState;
-            } else {
-                errorOccurred = true;
-                return Util.appendError(newState, Errors.COMMAND_NOT_FOUND, command.name);
+                return previousCommand;
             }
+
+            return previousCommand
+                .then((newState) => {
+                    if (this.commands[command.name]) {
+                        errorOccurred = errorOccurred || (newState && newState.error);
+                        return errorOccurred
+                            ? newState
+                            : Promise.resolve(this.commands[command.name].exec(newState, command));
+                    } else {
+                        errorOccurred = true;
+                        return Util.appendError(newState, Errors.COMMAND_NOT_FOUND, command.name);
+                    }
+                })
+                .catch((error) => {
+                    errorOccurred = true;
+                    const message = (error && error.message)
+                        ? error.message
+                        : `command ${command.name} failed`;
+                    return Util.appendError(newState, '$1', `command ${command.name} failed`);
+                });
         };
 
+        let result = Promise.resolve(state);
         while (!errorOccurred && commands.length) {
             const dependentCommands = commands.shift();
-            state = dependentCommands.reduce(reducer, state);
+            result = dependentCommands.reduce(reducer, result);
         }
-        return state;
+        return result;
     }
 
     /*

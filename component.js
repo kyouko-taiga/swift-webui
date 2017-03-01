@@ -100,7 +100,8 @@ export default class Terminal extends Component {
     handleKeyUp(evt) {
         if (evt.which === L_CHAR_CODE) {
             if (this.ctrlPressed) {
-                this.setState(this.Bash.execute('clear', this.state));
+                this.Bash.execute('clear', this.state)
+                    .then((newState) => { this.setState(newState); });
             }
         } else if (evt.which === C_CHAR_CODE) {
             if (this.ctrlPressed) {
@@ -126,8 +127,8 @@ export default class Terminal extends Component {
 
         // Execute command
         const input = evt.target[0].value;
-        const newState = this.Bash.execute(input, this.state);
-        this.setState(newState);
+        this.Bash.execute(input, this.state)
+            .then((newState) => { this.setState(newState); });
         this.refs.input.value = '';
     }
 
