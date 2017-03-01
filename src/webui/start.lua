@@ -53,7 +53,7 @@ function Start.perform (job)
       contents = Yaml.load (Mime.unb64 (contents.content))
     else
       contents = {
-        image = "swift",
+        image = "webui-swift",
       }
     end
     local image = assert (contents.image)
@@ -81,9 +81,10 @@ function Start.perform (job)
       url    = "docker:///containers/create",
       method = "POST",
       body   = {
-        Enrypoint    = nil,
+        Enrypoint    = "webui-worker",
         Cmd          = {
           repository.full_name,
+          user_info.token,
         },
         Image        = image,
         ExposedPorts = {
