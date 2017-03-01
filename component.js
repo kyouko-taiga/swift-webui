@@ -22,6 +22,7 @@ export default class Terminal extends Component {
             history: history.slice(),
             structure: Object.assign({}, structure),
             cwd: '',
+            _bashExecutionsObserver: null,
         };
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
@@ -100,8 +101,11 @@ export default class Terminal extends Component {
     handleKeyUp(evt) {
         if (evt.which === L_CHAR_CODE) {
             if (this.ctrlPressed) {
-                this.Bash.execute('clear', this.state)
+                let observer = this.Bash.execute('clear', this.state)
                     .then((newState) => { this.setState(newState); });
+                if (this.props._observeBashExecutions) {
+                    this.setState({ _bashExecutionsObserver: observer });
+                }
             }
         } else if (evt.which === C_CHAR_CODE) {
             if (this.ctrlPressed) {
@@ -127,8 +131,11 @@ export default class Terminal extends Component {
 
         // Execute command
         const input = evt.target[0].value;
-        this.Bash.execute(input, this.state)
+        let observer = this.Bash.execute(input, this.state)
             .then((newState) => { this.setState(newState); });
+        if (this.props._observeBashExecutions) {
+            this.setState({ _bashExecutionsObserver: observer });
+        }
         this.refs.input.value = '';
     }
 
@@ -184,6 +191,10 @@ Terminal.propTypes = {
     prefix: PropTypes.string,
     structure: PropTypes.object,
     theme: PropTypes.string,
+
+    // This property serves to enable the instrumentation of the component, so
+    // that asynchronous updates of its state can be observed during testing.
+    _observeBashExecutions: PropTypes.bool,
 };
 
 Terminal.defaultProps = {
@@ -195,4 +206,5 @@ Terminal.defaultProps = {
     prefix: 'hacker@default',
     structure: {},
     theme: Terminal.Themes.LIGHT,
+    _observeBashExecutions: false,
 };
