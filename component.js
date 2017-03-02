@@ -103,7 +103,11 @@ export default class Terminal extends Component {
         if (evt.which === L_CHAR_CODE) {
             if (this.ctrlPressed) {
                 const observer = this.Bash.execute('clear', this.state)
-                    .then((newState) => { this.setState(newState); });
+                    .then((nextState) => {
+                        return new Promise((resolve) => {
+                            this.setState(nextState, resolve);
+                        });
+                    });
 
                 // Test instrumentation
                 if (this.props.observeBashExecutions) {
@@ -137,11 +141,18 @@ export default class Terminal extends Component {
         this.setState(
             Object.assign({}, this.Bash.pushInput(input, this.state), { isBusy: true }),
             () => {
-                // Execute command
-                const observer = this.Bash.execute(input, this.state).then((newState) => {
-                    this.setState(Object.assign({}, newState, { isBusy: false }));
-                });
                 this.refs.input.value = '';
+
+                // Execute command
+                const observer = this.Bash.execute(input, this.state, (nextState) => {
+                    return new Promise((resolve) => { this.setState(nextState, resolve); });
+                })
+                    .then((nextState) => {
+                        return new Promise((resolve) => {
+                            this.setState(
+                                Object.assign({}, nextState, { isBusy: false }), resolve);
+                        });
+                    });
 
                 // Test instrumentation
                 if (this.props.observeBashExecutions) {

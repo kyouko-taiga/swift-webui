@@ -39,9 +39,9 @@ export default class Bash {
      * @param {Object} state - the current terminal state
      * @returns {Object} a promise that resolves to the new terminal state
      */
-    execute(input, currentState) {
+    execute(input, currentState, progressObserver = () => {}) {
         const commandList = BashParser.parse(input);
-        return this.runCommands(commandList, currentState);
+        return this.runCommands(commandList, currentState, progressObserver);
     }
 
     /*
@@ -54,46 +54,72 @@ export default class Bash {
      * @param {Object} state - the terminal state
      * @returns {Object} a promise that resolves to the new terminal state
      */
-    runCommands(commands, state) {
+    runCommands(commands, state, progressObserver = () => {}) {
         let errorOccurred = false;
+        let newState = Object.assign({}, state);
 
-        /*
-         * This function executes a single command and wraps its result into a
-         * a promise. If the promise fails, or if it returns an erroneous
-         * state, the following dependent commands should not be run.
-         */
-        const reducer = (previousCommand, command) => {
-            if (command.name === '') {
-                return previousCommand;
-            }
-
-            return previousCommand
-                .then((newState) => {
-                    if (this.commands[command.name]) {
-                        errorOccurred = errorOccurred || (newState && newState.error);
-                        return errorOccurred
-                            ? newState
-                            : Promise.resolve(this.commands[command.name].exec(newState, command))
-                                .catch((error) => {
-                                    errorOccurred = true;
-                                    const message = (error && error.message)
-                                        ? error.message
-                                        : `command ${command.name} failed`;
-                                    return Util.appendError(newState, '$1', message);
-                                });
-                    } else {
-                        errorOccurred = true;
-                        return Util.appendError(newState, Errors.COMMAND_NOT_FOUND, command.name);
-                    }
+        const emitNextState = (p, command) => {
+            return p
+                .catch((error) => {
+                    errorOccurred = true;
+                    const message = (error && error.message)
+                        ? error.message
+                        : `command ${command.name} failed`;
+                    return Util.appendError(newState, '$1', message);
+                })
+                .then((nextState) => {
+                    errorOccurred = errorOccurred || (nextState && nextState.error);
+                    newState = nextState;
+                    return nextState;
                 });
         };
 
-        let result = Promise.resolve(state);
-        while (!errorOccurred && commands.length) {
-            const dependentCommands = commands.shift();
-            result = dependentCommands.reduce(reducer, result);
-        }
-        return result;
+        const self = this;
+        const stream = (function* () {
+            for (const dependentCommands of commands) {
+                for (const command of dependentCommands) {
+                    if (errorOccurred) {
+                        break;
+                    }
+
+                    if (command.name === '') {
+                        yield Promise.resolve(newState);
+                        continue;
+                    }
+
+                    if (!self.commands[command.name]) {
+                        errorOccurred = true;
+                        newState = Util.appendError(
+                            newState, Errors.COMMAND_NOT_FOUND, command.name);
+                        yield Promise.resolve(newState);
+                        continue;
+                    }
+
+                    const result = self.commands[command.name].exec(newState, command);
+                    if (result && (typeof result[Symbol.iterator] === 'function')) {
+                        // If the result of the command is an iterable, yield
+                        // its successive procuded states.
+                        for (const partial of result) {
+                            yield emitNextState(Promise.resolve(partial), command);
+                        }
+                    } else {
+                        yield emitNextState(Promise.resolve(result), command);
+                    }
+                }
+            }
+        }());
+
+        const consumeStream = () => {
+            const { value, done } = stream.next();
+            if (!done) {
+                return value
+                    .then((nextState) => progressObserver(nextState))
+                    .then(() => consumeStream(stream));
+            }
+            return Promise.resolve(newState);
+        };
+
+        return consumeStream();
     }
 
     /*
