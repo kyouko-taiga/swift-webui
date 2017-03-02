@@ -174,7 +174,7 @@ export const rm = {
 };
 
 export const sleep = {
-    exec: (state, { flags, args }) => {
+    exec: (state, { args }) => {
         let duration = parseFloat(args[0]);
         if (isNaN(duration)) {
             duration = 0;

@@ -23,7 +23,7 @@ export default class Terminal extends Component {
             structure: Object.assign({}, structure),
             cwd: '',
             isBusy: false,
-            _bashExecutionsObserver: null,
+            bashExecutionsObserver: null,
         };
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
@@ -102,12 +102,12 @@ export default class Terminal extends Component {
     handleKeyUp(evt) {
         if (evt.which === L_CHAR_CODE) {
             if (this.ctrlPressed) {
-                let observer = this.Bash.execute('clear', this.state)
+                const observer = this.Bash.execute('clear', this.state)
                     .then((newState) => { this.setState(newState); });
 
                 // Test instrumentation
-                if (this.props._observeBashExecutions) {
-                    this.setState({ _bashExecutionsObserver: observer });
+                if (this.props.observeBashExecutions) {
+                    this.setState({ bashExecutionsObserver: observer });
                 }
             }
         } else if (evt.which === C_CHAR_CODE) {
@@ -135,17 +135,17 @@ export default class Terminal extends Component {
         const input = evt.target[0].value;
 
         this.setState(
-            Object.assign({}, this.Bash.pushInput(input, this.state), {isBusy: true}),
+            Object.assign({}, this.Bash.pushInput(input, this.state), { isBusy: true }),
             () => {
                 // Execute command
-                let observer = this.Bash.execute(input, this.state).then((newState) => {
-                    this.setState(Object.assign({}, newState, {isBusy: false}));
+                const observer = this.Bash.execute(input, this.state).then((newState) => {
+                    this.setState(Object.assign({}, newState, { isBusy: false }));
                 });
                 this.refs.input.value = '';
 
                 // Test instrumentation
-                if (this.props._observeBashExecutions) {
-                    this.setState({ _bashExecutionsObserver: observer });
+                if (this.props.observeBashExecutions) {
+                    this.setState({ bashExecutionsObserver: observer });
                 }
             });
     }
@@ -212,7 +212,7 @@ Terminal.propTypes = {
 
     // This property serves to enable the instrumentation of the component, so
     // that asynchronous updates of its state can be observed during testing.
-    _observeBashExecutions: PropTypes.bool,
+    observeBashExecutions: PropTypes.bool,
 };
 
 Terminal.defaultProps = {
@@ -224,5 +224,5 @@ Terminal.defaultProps = {
     prefix: 'hacker@default',
     structure: {},
     theme: Terminal.Themes.LIGHT,
-    _observeBashExecutions: false,
+    observeBashExecutions: false,
 };
