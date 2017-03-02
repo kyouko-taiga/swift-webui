@@ -18,16 +18,14 @@ class FileTree extends React.Component {
             this.props.dispatch)
 
         return (
-            <div>
-                <div className="panel panel-info">
-                    <div className="panel-heading">
-                        <i className="fa fa-fw fa-code-fork" />
-                        { this.props.repository.name }/{ this.props.repository.activeBranch }
-                    </div>
-                    <ul className="sw-filetree">
-                        { nodes }
-                    </ul>
+            <div className="sw-filetree">
+                <div className="sw-filetree-heading">
+                    <i className="fa fa-fw fa-code-fork" />
+                    { this.props.repository.name }/{ this.props.repository.activeBranch }
                 </div>
+                <ul>
+                    { nodes }
+                </ul>
             </div>
         )
     }

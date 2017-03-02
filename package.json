@@ -30,6 +30,7 @@
         "react-dom": "latest",
         "react-redux": "latest",
         "react-router": "latest",
+        "react-split-pane": "latest",
         "redux": "latest",
         "redux-logger": "latest",
         "redux-promise": "latest",

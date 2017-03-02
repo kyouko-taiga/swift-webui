@@ -1,0 +1,138 @@
+.sw-editor-view {
+    position: relative;
+    height: 100%;
+}
+
+.sw-filetree {
+    overflow-x: hidden;
+    white-space: nowrap;
+}
+
+.sw-filetree .sw-filetree-heading {
+    padding: 5px 10px;
+}
+
+.sw-filetree > ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+        padding: 5px 10px;
+        cursor: pointer;
+
+        &:hover, &.active {
+            background-color: $sw-editor-bg;
+        }
+    }
+
+    .sw-filetree-indent {
+        display: inline-block;
+        width: 1.28571429em;
+    }
+}
+
+
+.sw-tag {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #999;
+
+    &.sw-tag-modified {
+        background-color: #5bc0de;
+    }
+}
+
+.sw-editor-no-file {
+    text-align: center;
+    font-size: 28px;
+    color: $sw-text-muted-color;
+}
+
+.sw-editor-tabs {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    &:after {
+        clear: both;
+    }
+
+    &:after, &:before {
+        content: " ";
+        display: table;
+    }
+}
+
+.sw-editor-tabs > li {
+    position: relative;
+    display: block;
+    float: left;
+
+    & > span {
+        position: relative;
+        display: block;
+        padding: 10px 15px;
+        line-height: 1.42857143;
+        border: 1px solid transparent;
+        border-bottom: none;
+        text-align: center;
+        color: $sw-text-muted-color;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        .sw-close-span {
+            display: block;
+            position: absolute;
+            right: 0;
+            top: 0;
+            padding: 8px;
+
+            & > * {
+                position: absolute;
+                right: 0;
+                width: 24px;
+                padding: 2px;
+                text-align: center;
+            }
+
+            .sw-close-button {
+                display: inline-block;
+                opacity: 0;
+                transition: opacity 0.1s linear;
+                color: inherit;
+                background: $sw-body-bg;
+            }
+        }
+
+        &:hover > .sw-close-span > .sw-close-button {
+            opacity: 1;
+        }
+    }
+
+    &.active > span {
+        background: $sw-editor-bg;
+        color: #f8f8f2;
+
+        .sw-close-span > .sw-close-button {
+            background: $sw-editor-bg;
+        }
+    }
+}
+
+
+// Override codemirror's theme.
+.CodeMirror.cm-s-monokai,
+.cm-s-monokai .CodeMirror-gutters {
+    height: auto;
+    background-color: $sw-editor-bg;
+}
+
+.cm-s-monokai .CodeMirror-guttermarker,
+.cm-s-monokai .CodeMirror-guttermarker-subtle,
+.cm-s-monokai .CodeMirror-linenumber {
+  color: rgb(83,127,126);
+}

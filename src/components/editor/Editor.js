@@ -26,6 +26,7 @@ class Editor extends React.Component {
 
         this.saveCode = this.saveCode.bind(this)
         this.updateCode = this.updateCode.bind(this)
+        this.referenceCallback = this.referenceCallback.bind(this)
     }
 
     componentDidMount() {
@@ -53,9 +54,18 @@ class Editor extends React.Component {
         this.props.dispatch(updateFileContent(this.props.activeFile.path, newCode))
     }
 
+    referenceCallback(ref) {
+        if (ref) {
+            const cm = ref.getCodeMirror()
+            const { height } = this.props
+            cm.setSize('auto', height)
+        }
+    }
+
     render() {
         if (this.props.activeFile == null) {
-            return <div>No file selected.</div>
+            const style = { lineHeight: `${this.props.height}px` }
+            return <div className="sw-editor-no-file" style={style}>No file selected</div>
         }
 
         const options = {
@@ -71,6 +81,7 @@ class Editor extends React.Component {
                     openedFiles={this.props.openedFiles}
                 />
                 <CodeMirrorEditor
+                    ref={this.referenceCallback}
                     onChange={this.updateCode}
                     value={this.props.activeFile.content}
                     options={options}
@@ -82,12 +93,12 @@ class Editor extends React.Component {
 }
 
 Editor.propTypes = {
-    mode: PropTypes.string,
-    theme: PropTypes.string,
+    height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     options: PropTypes.object
 }
 
 Editor.defaultProps = {
+    height: 'auto',
     options: {
         mode: null,
         theme: 'monokai',

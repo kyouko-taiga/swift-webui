@@ -41,7 +41,7 @@ export default class EditorTabs extends React.Component {
         })
 
         return (
-            <ul className="nav nav-tabs sw-editor-tabs">
+            <ul className="sw-editor-tabs">
                 { openedFiles }
             </ul>
         )

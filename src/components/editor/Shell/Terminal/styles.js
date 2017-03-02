@@ -6,6 +6,7 @@ BaseStyles.ReactBash = {
     fontFamily: '\'Inconsolata\', monospace',
     fontSize: '13px',
     fontWeight: '400',
+    width: '100%',
     height: '100%',
     overflow: 'hidden',
     textAlign: 'left',
@@ -75,14 +76,14 @@ export default {
     }),
     dark: Object.assign({}, BaseStyles, {
         body: Object.assign({}, BaseStyles.body, {
-            backgroundColor: '#000',
+//            backgroundColor: '#000',
             color: '#d0d0d0',
         }),
         header: Object.assign({}, BaseStyles.header, {
             backgroundColor: '#dcdbdb',
         }),
         prefix: Object.assign({}, BaseStyles.prefix, {
-            color: '#5b65fb',
+            color: '#bd081c',
         }),
     }),
 };
