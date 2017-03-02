@@ -37,6 +37,7 @@ export default class Bash {
      *
      * @param {string} input - the user input
      * @param {Object} state - the current terminal state
+     * @param {function} state - a state progress observer callback
      * @returns {Object} a promise that resolves to the new terminal state
      */
     execute(input, currentState, progressObserver = () => {}) {
@@ -52,6 +53,7 @@ export default class Bash {
      *
      * @param {Array} commands - the commands to run
      * @param {Object} state - the terminal state
+     * @param {function} state - a state progress observer callback
      * @returns {Object} a promise that resolves to the new terminal state
      */
     runCommands(commands, state, progressObserver = () => {}) {
