@@ -18,6 +18,7 @@
         "watchify": "latest"
     },
     "dependencies": {
+        "babel-polyfill": "latest",
         "bluebird": "latest",
         "classnames": "latest",
         "codemirror": "latest",
