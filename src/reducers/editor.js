@@ -9,22 +9,7 @@ import {
 const initialState = {
     activeFile: null,
     openedFiles: [],
-    arborescence: {}
-}
-
-
-function toggleDirectory(arborescence, path, collapsed) {
-    let done = false
-    return Object.map(arborescence, (key, value) => {
-        if (done || (typeof value == 'string')) {
-            return [key, value]
-        } else if (value.path == path) {
-            return [key, {...value, collapsed: collapsed}]
-            done = true
-        }
-
-        return [key, toggleDirectory(value.files, path, collapsed)]
-    })
+    openedDirectories: {},
 }
 
 
@@ -66,42 +51,10 @@ const editor = (state = initialState, action) => {
     case EDITOR_TOGGLE_DIRECTORY:
         return {
             ...state,
-            arborescence: toggleDirectory(
-                state.arborescence, action.payload.path, action.payload.collapsed)
-        }
-
-    case LIST_FILES:
-        if ((action.meta.status == 'pending') || !action.payload.entities) {
-            return state
-        }
-
-        // Rebuild the file arborescence.
-        let arborescence = {}
-        const files = Object.map(action.payload.entities['files'], (key, value) =>
-            [key, {...value, __modified__: false}])
-
-        for (let path in files) {
-            // Walk the arborescence and create any missing subdirectories.
-            let directory = arborescence
-            const components = path.split('/').slice(0, -1)
-            components.map((subdirectory, index) => {
-                if (!(subdirectory in directory)) {
-                    directory[subdirectory] = {
-                        path: components.slice(0, index + 1).join('/') + '/',
-                        collapsed: true,
-                        files: {}
-                    }
-                }
-                directory = directory[subdirectory].files
-            })
-
-            // Place the file in the arborescence.
-            directory[path] = files[path].path
-        }
-
-        return {
-            ...state,
-            arborescence: arborescence
+            openedDirectories: {
+                ...state.openedDirectories,
+                [action.payload.path]: !action.payload.collapsed,
+            },
         }
 
     default:
