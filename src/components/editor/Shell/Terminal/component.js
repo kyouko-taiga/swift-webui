@@ -29,10 +29,6 @@ export default class Terminal extends Component {
         this.handleKeyUp = this.handleKeyUp.bind(this);
     }
 
-    componentDidMount() {
-        this.refs.input.focus();
-    }
-
     componentWillReceiveProps({ extensions, structure, history }) {
         const updatedState = {};
         if (structure) {
@@ -183,11 +179,6 @@ export default class Terminal extends Component {
 
         return (
             <div className="ReactBash" style={style.ReactBash}>
-                <div style={style.header}>
-                    <span style={style.redCircle} onClick={onClose}></span>
-                    <span style={style.yellowCircle} onClick={onMinimize}></span>
-                    <span style={style.greenCircle} onClick={onExpand}></span>
-                </div>
                 <div style={style.body} onClick={() => this.refs.input.focus()}>
                     {history.map(this.renderHistoryItem(style))}
                     <form onSubmit={evt => this.handleSubmit(evt)} style={formStyle}>

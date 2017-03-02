@@ -1,7 +1,6 @@
 const BaseStyles = {};
 
 BaseStyles.ReactBash = {
-    borderRadius: '5px',
     display: 'flex',
     flexDirection: 'column',
     fontFamily: '\'Inconsolata\', monospace',
@@ -53,7 +52,7 @@ BaseStyles.input = {
     flexGrow: '1',
     fontFamily: 'inherit',
     fontSize: 'inherit',
-    outline: 'none !important',
+    outline: 'none',
     padding: 0,
 };
 
