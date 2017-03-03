@@ -93,9 +93,8 @@ function dereferencedArborescence(arborescence, state) {
 }
 
 
-function stateToProps(state) {
+function stateToProps(state, props) {
     return {
-        repository: state.repository,
         files: dereferencedArborescence(state.arborescence, state),
         openedDirectories: state.editor.openedDirectories,
         editor: state.editor

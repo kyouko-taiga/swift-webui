@@ -119,7 +119,6 @@ class EditorContainer extends React.Component {
 
     componentDidMount() {
         this.setState({isFetching: true})
-
         this.props.dispatch(listFiles(this.props.repository.id))
             .then((action) => {
                 this.setState({
@@ -139,7 +138,6 @@ class EditorContainer extends React.Component {
 
 function stateToProps(state) {
     return {
-        repository: state.repository,
         activeFile: (state.editor.activeFile != null)
             ? state.files[state.editor.activeFile]
             : null,

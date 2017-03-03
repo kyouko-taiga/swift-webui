@@ -1,0 +1,42 @@
+.sw-home {
+    width: 50%;
+    min-width: 300px;
+    margin: 10% auto 0 auto;
+    text-align: center;
+
+    h1 {
+        font-weight: 200;
+        font-size: 50px;
+        margin-bottom: 30px;
+    }
+
+    h2 {
+        font-weight: 200;
+        margin-bottom: 60px;
+    }
+}
+
+.sw-repository-list {
+    margin: auto;
+    text-align: left;
+
+    & > ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    & > ul > li > a {
+        display: inline-block;
+        width: 100%;
+        padding: 10px 20px;
+        margin-bottom: 20px;
+        color: $sw-text-color;
+        text-decoration: none;
+        font-size: $font-size-large;
+        border: 1px solid $sw-resizer-color;
+
+        &:hover {
+            background-color: $sw-editor-bg;
+        }
+    }
+}
