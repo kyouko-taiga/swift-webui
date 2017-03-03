@@ -6,6 +6,9 @@
   </head>
   <body>
     <div id="app"></div>
+    <script>
+      window.token = "<%- token %>"
+    </script>
     <script src="static/build/app.js"></script>
   </body>
 </html>

@@ -2,6 +2,7 @@ local Config = require "lapis.config".get ()
 local Csrf   = require "lapis.csrf"
 local Et     = require "etlua"
 local Http   = require "webui.jsonhttp".resty
+local Json   = require "rapidjson"
 local Lapis  = require "lapis"
 local Mime   = require "mime"
 local Model  = require "webui.model"
@@ -10,6 +11,7 @@ local Util   = require "lapis.util"
 
 local app  = Lapis.Application ()
 app.layout = false
+app:enable "etlua"
 
 app.handle_error = function (_, error, trace)
   print (error)
@@ -25,37 +27,21 @@ app.handle_404 = function ()
   }
 end
 
-app:match ("/repositories", function (self)
+app:before_filter (function (self)
+  local token = self.req.headers ["Webui-Token"]
+  if token then
+    self.session.user = Json.decode (token) -- FIXME: should be signed
+  end
+end)
+
+app:match ("/", function (self)
   if not self.session.user then
     return { redirect_to = "/login" }
   end
-  local user_info = Model.accounts:find {
-    id = self.session.user.id,
-  }
-  local repositories, status = Http {
-    url     = "https://api.github.com/user/repos",
-    method  = "GET",
-    headers = {
-      ["Accept"       ] = "application/vnd.github.v3+json",
-      ["Authorization"] = "token " .. user_info.token,
-      ["User-Agent"   ] = Config.application.name,
-    },
-  }
-  assert (status == 200, status)
-  for _, repository in ipairs (repositories) do
-    if not pcall (function ()
-      assert (Model.repositories:create {
-        id = repository.id,
-      })
-    end) then
-      assert (Model.repositories:find {
-        id = repository.id,
-      })
-    end
-  end
+  self.token = Json.encode (self.session.user)
   return {
     status = 200,
-    json   = repositories,
+    render = "index",
   }
 end)
 
@@ -71,7 +57,7 @@ end)
 
 app:match ("/logout", function (self)
   self.session.user = nil
-  return { status = 204 }
+  return { redirect_to = "http://cui.unige.ch" }
 end)
 
 app:match ("/register", function (self)
@@ -93,6 +79,9 @@ app:match ("/register", function (self)
     },
   }
   assert (status == 200, status)
+  if not token.access_token then
+    return { status = 403 }
+  end
   user, status = Http {
     url     = "https://api.github.com/user",
     method  = "GET",
@@ -108,7 +97,7 @@ app:match ("/register", function (self)
       id    = user.id,
       token = token.access_token,
     })
-    assert (os.mkdir (Config.application.data .. "/" .. user.login))
+    assert (os.mkdir (Config.data.inside .. "/" .. user.login))
   end) then
     assert (Model.accounts:find {
       id = user.id,
@@ -122,12 +111,49 @@ app:match ("/register", function (self)
     user = user,
   })
   self.session.user = user
-  return { redirect_to = "/repositories" }
+  return { redirect_to = "/" }
 end)
 
-app:match ("/repositories/:owner/:repository", function (self)
+app:match ("/api/repositories/", function (self)
   if not self.session.user then
     return { redirect_to = "/login" }
+  end
+  local user_info = assert (Model.accounts:find {
+    id = self.session.user.id,
+  })
+  local repositories, status = Http {
+    url     = "https://api.github.com/user/repos",
+    method  = "GET",
+    headers = {
+      ["Accept"       ] = "application/vnd.github.v3+json",
+      ["Authorization"] = "token " .. user_info.token,
+      ["User-Agent"   ] = Config.application.name,
+    },
+  }
+  assert (status == 200, status)
+  for _, repository in ipairs (repositories) do
+    if not pcall (function ()
+      assert (Model.repositories:create {
+        id    = repository.id,
+        owner = repository.owner.login,
+        name  = repository.name,
+      })
+    end) then
+      assert (Model.repositories:find {
+        id = repository.id,
+      })
+    end
+  end
+  return {
+    status = 200,
+    json   = repositories,
+  }
+end)
+
+app:match ("/api/repositories/:owner/:repository", function (self)
+  if not self.session.user
+  or self.session.user.login ~= self.params.owner then
+    return { status = 403 }
   end
   local user_info = Model.accounts:find {
     id = self.session.user.id,
@@ -157,7 +183,9 @@ app:match ("/repositories/:owner/:repository", function (self)
   end
   if not pcall (function ()
     assert (Model.repositories:create {
-      id = repository.id,
+      id    = repository.id,
+      owner = repository.owner.login,
+      name  = repository.name,
     })
   end) then
     assert (Model.repositories:find {
@@ -167,8 +195,7 @@ app:match ("/repositories/:owner/:repository", function (self)
   local info = Model.repositories:find {
     id = repository.id,
   }
-  if info.url then
-    repository.webui_url = info.url
+  if info.shell and info.notify then
     return {
       status = 200,
       json   = repository,
@@ -183,5 +210,61 @@ app:match ("/repositories/:owner/:repository", function (self)
     return { status = 409 }
   end
 end)
+
+local types = {
+  stdin  = "shell",
+  stdout = "shell",
+  stderr = "shell",
+  notify = "notify",
+}
+
+app:match ("/streams/:owner/:repository/:type", function (self)
+  if not self.session.user
+  or self.session.user.login ~= self.params.owner then
+    return { status = 403 }
+  end
+  if not types [self.params.type] then
+    return { status = 400 }
+  end
+  local repository_info = Model.repositories:find {
+    owner = self.params.owner,
+    name  = self.params.repository,
+  }
+  if types [self.params.type] == "shell" then
+    if not repository_info
+    or not repository_info.shell then
+      return { status = 404 }
+    end
+    _G.ngx.var.target = Et.render ("ws://<%- host %>:<%- port %>/containers/<%- container %>/attach/ws?<%- type %>=true&stream=true", {
+      host      = Config.docker.host,
+      port      = Config.docker.port,
+      container = repository_info.docker,
+      type      = self.params.type,
+    })
+  elseif types [self.params.type] == "notify" then
+    if not repository_info
+    or not repository_info.notify then
+      return { status = 404 }
+    end
+    local state, status = Http {
+      method = "GET",
+      url    = Et.render ("http://<%- host %>:<%- port %>/containers/<%- container %>/json", {
+        host      = Config.docker.host,
+        port      = Config.docker.port,
+        container = repository_info.notify,
+      }),
+    }
+    assert (status == 200, status)
+    assert (state.State.Running)
+    local data = ((state.NetworkSettings.Ports ["8080/tcp"] or {}) [1] or {})
+    _G.ngx.var.target = Et.render ("ws://<%- host %>:<%- port %>", {
+      host = data.HostIp,
+      port = data.HostPort,
+    })
+  else
+    assert (false)
+  end
+end)
+
 
 return app
