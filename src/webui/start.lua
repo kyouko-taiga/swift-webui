@@ -172,12 +172,12 @@ function Start.perform (job)
         repository     = repository.name,
       })))
       -- Do not know why it seems to work when stdout/stderr streams are read...
-      for _ = 1, 5 do
-        stdout:recv_frame()
-      end
-      for _ = 1, 5 do
-        stderr:recv_frame()
-      end
+      local lines = {}
+      stdout:set_timeout (500)
+      repeat
+        local line = stdout:recv_frame ()
+        lines [#lines+1] = line
+      until not line
       stdin :send_close ()
       stdout:send_close ()
       stderr:send_close ()
