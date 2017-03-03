@@ -4,6 +4,15 @@ from flask import Flask, current_app, jsonify, request
 
 
 database = {
+    'repositories': [{
+        'id': '12345',
+        'name': 'swift-webui',
+        'activeBranch': 'master'
+    }, {
+        'id': '67890',
+        'name': 'koala',
+        'activeBranch': 'master'
+    }],
     'files': [{
         'mimetype': 'text/x-markdown',
         'path': 'README.md',
@@ -55,6 +64,11 @@ app = Flask(__name__)
 def index():
     with open('index.html') as f:
         return f.read()
+
+
+@app.route('/api/repositories/')
+def list_repositories():
+    return jsonify_list(database['repositories'])
 
 
 @app.route('/api/repositories/<repository_id>/files/')

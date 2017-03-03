@@ -1,16 +1,16 @@
 import { combineReducers } from 'redux'
 
 import arborescence from './arborescence'
-import growls from './growls'
-import repository from './repository'
-import files from './files'
 import editor from './editor'
+import files from './files'
+import growls from './growls'
+import repositories from './repositories'
 
 
 export default combineReducers({
     arborescence,
-    growls,
-    repository,
+    editor,
     files,
-    editor
+    growls,
+    repositories,
 })

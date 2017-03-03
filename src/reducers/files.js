@@ -17,7 +17,7 @@ const files = (state = {}, action) => {
 
         return {
             ...state,
-            ...Object.map(action.payload.entities['files'], (key, value) =>
+            ...Object.map(action.payload.entities.files, (key, value) =>
             [key, {...value, __modified__: false}])
         }
 
