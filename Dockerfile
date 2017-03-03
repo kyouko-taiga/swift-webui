@@ -66,6 +66,7 @@ RUN apk add --no-cache --virtual .build-deps \
  && mkdir -p static/build \
  && npm install \
  && npm run build \
+ && npm rebuild node-sass \
  && npm run css \
  && mkdir -p /www \
  && cp lapis/*        / \
