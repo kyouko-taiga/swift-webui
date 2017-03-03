@@ -1,13 +1,14 @@
-local Config = require "lapis.config".get ()
-local Csrf   = require "lapis.csrf"
-local Et     = require "etlua"
-local Http   = require "webui.jsonhttp".resty
-local Json   = require "rapidjson"
-local Lapis  = require "lapis"
-local Mime   = require "mime"
-local Model  = require "webui.model"
-local Qless  = require "resty.qless"
-local Util   = require "lapis.util"
+local Config     = require "lapis.config".get ()
+local Csrf       = require "lapis.csrf"
+local Et         = require "etlua"
+local Http       = require "webui.jsonhttp".resty
+local Json       = require "rapidjson"
+local Lapis      = require "lapis"
+local Mime       = require "mime"
+local Model      = require "webui.model"
+local Qless      = require "resty.qless"
+local Util       = require "lapis.util"
+local respond_to = require "lapis.application".respond_to
 
 local app  = Lapis.Application ()
 app.layout = false
@@ -207,9 +208,74 @@ app:match ("/api/repositories/:owner/:repository", function (self)
       user       = self.session.user,
       repository = repository,
     })
-    return { status = 409 }
+    return { status = 202 }
   end
 end)
+
+app:match ("/api/repositories/:owner/:repository/*", respond_to {
+  GET = function (self)
+    if not self.session.user
+    or self.session.user.login ~= self.params.owner then
+      return { status = 403 }
+    end
+    local user_directory = Config.data.inside .. "/" .. self.params.owner
+    local data_directory = user_directory .. "/" .. self.params.repository
+    local base_directory = data_directory .. "/" .. self.params.repository
+    local file, err = io.open (base_directory .. "/" .. self.params.splat, "r")
+    if not file then
+      return {
+        status = 404,
+        json = { error = err }
+      }
+    end
+    local content = assert (file:read "*a")
+    assert (file:close ())
+    return {
+      status = 200,
+      json = {
+        path    = self.params.splat,
+        content = content,
+      }
+    }
+  end,
+  DELETE = function (self)
+    if not self.session.user
+    or self.session.user.login ~= self.params.owner then
+      return { status = 403 }
+    end
+    local user_directory = Config.data.inside .. "/" .. self.params.owner
+    local data_directory = user_directory .. "/" .. self.params.repository
+    local base_directory = data_directory .. "/" .. self.params.repository
+    local ok, err = os.remove (base_directory .. "/" .. self.params.splat)
+    if not ok then
+      return {
+        status = 404,
+        json = { error = err }
+      }
+    end
+    return { status = 204 }
+  end,
+  PUT = function (self)
+    if not self.session.user
+    or self.session.user.login ~= self.params.owner then
+      return { status = 403 }
+    end
+    local user_directory = Config.data.inside .. "/" .. self.params.owner
+    local data_directory = user_directory .. "/" .. self.params.repository
+    local base_directory = data_directory .. "/" .. self.params.repository
+    local file, err = io.open (base_directory .. "/" .. self.params.splat, "w")
+    if not file then
+      return {
+        status = 404,
+        json = { error = err }
+      }
+    end
+    _G.ngx.req.read_body ()
+    assert (file:write (_G.ngx.req.get_body_data ()))
+    assert (file:close ())
+    return { status = 201 }
+  end,
+})
 
 local types = {
   stdin  = "shell",
