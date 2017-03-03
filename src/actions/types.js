@@ -11,3 +11,5 @@ export const LIST_REPOSITORIES = 'LIST_REPOSITORIES'
 export const LIST_FILES = 'LIST_FILES'
 export const GET_FILE = 'GET_FILE'
 export const PATCH_FILE = 'PATCH_FILE'
+
+export const BASH_EXECUTE = 'BASH_EXECUTE'

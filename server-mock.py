@@ -1,6 +1,7 @@
 import json
 
 from flask import Flask, current_app, jsonify, request
+from subprocess import check_output
 
 
 database = {
@@ -86,6 +87,16 @@ def patch_files(repository_id, file_path):
             return jsonify(database['files'][i])
 
     raise ApiError('file not found', 404)
+
+
+@app.route('/api/bash/execute', methods=['POST'])
+def bash_execute():
+    post_data = request.get_json(force=True)
+    command = post_data['command']
+
+    return jsonify({
+        'stdout': check_output(command.split()).decode()
+    })
 
 
 if __name__ == '__main__':

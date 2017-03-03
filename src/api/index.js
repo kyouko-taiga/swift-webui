@@ -77,6 +77,15 @@ const wrapper = {
                 })
             }
         })
+    },
+    bash: {
+        execute: (command) => ({
+            post: () => fetch(`${API_ROOT}/bash/execute`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ command })
+            }).then((resp) => handleResponse(resp))
+        })
     }
 }
 
