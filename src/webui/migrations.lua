@@ -13,8 +13,10 @@ return {
   function ()
     Schema.create_table ("repositories", {
       { "id"    , Schema.types.integer { primary_key = true } },
-      { "docker", Schema.types.text    { null        = true } },
-      { "url"   , Schema.types.text    { null        = true } },
+      { "shell" , Schema.types.text    { null        = true } },
+      { "notify", Schema.types.text    { null        = true } },
+      { "owner" , Schema.types.text },
+      { "name"  , Schema.types.text },
     })
   end,
 }

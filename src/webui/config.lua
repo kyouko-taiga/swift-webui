@@ -1,6 +1,7 @@
 local Config = require "lapis.config"
 local Url    = require "socket.url"
 
+local docker_url   = assert (Url.parse (os.getenv "DOCKER_PORT"  ))
 local postgres_url = assert (Url.parse (os.getenv "POSTGRES_PORT"))
 local redis_url    = assert (Url.parse (os.getenv "REDIS_PORT"   ))
 
@@ -9,11 +10,14 @@ local common = {
   port         = 8080,
   num_workers  = 1,
   session_name = "webui",
-  application = {
+  application  = {
     name   = "Webui",
     id     = assert (os.getenv "APPLICATION_ID"    ),
     secret = assert (os.getenv "APPLICATION_SECRET"),
-    data   = "/data",
+  },
+  data = {
+    outside = assert (os.getenv "DATA_DIRECTORY"),
+    inside  = "/data",
   },
   postgres = {
     backend  = "pgmoon",
@@ -31,6 +35,8 @@ local common = {
   docker = {
     username = assert (os.getenv "DOCKER_USER"  ),
     api_key  = assert (os.getenv "DOCKER_SECRET"),
+    host     = assert (docker_url.host),
+    port     = assert (docker_url.port),
   },
   clean = {
     delay = 10,

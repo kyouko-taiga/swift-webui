@@ -1,19 +1,13 @@
 #! /usr/bin/env lua
 
-local Posix  = require "posix"
 local Setenv = require "posix.stdlib".setenv
 local Socket = require "socket"
-local Stat   = require "posix.sys.stat".stat
 local Url    = require "socket.url"
-
-assert (Stat "/var/run/docker.sock")
-print "Fixing permissions on docker socket..."
-assert (Posix.chmod ("/var/run/docker.sock", "ugo+w"))
 
 -- FIXME:  nginx resolver does not seem to work within docker-compose or
 -- docker-cloud, so we convert all service hostnames to ips before
 -- launching the server.
-for _, address in ipairs { "POSTGRES_PORT", "REDIS_PORT" } do
+for _, address in ipairs { "DOCKER_PORT", "POSTGRES_PORT", "REDIS_PORT" } do
   local parsed = assert (Url.parse (os.getenv (address)))
   parsed.host  = assert (Socket.dns.toip (parsed.host))
   Setenv (address, Url.build (parsed))

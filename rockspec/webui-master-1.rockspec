@@ -17,18 +17,12 @@ dependencies = {
   "lua >= 5.1",
   "etlua",
   "lapis",
-  "lpeg",
-  "luafilesystem",
-  "luaossl",
   "luaposix",
   "luasec",
   "luasocket",
   "luasocket-unix",
-  "lua-resty-exec",
   "lua-resty-http",
   "lua-resty-qless", -- FIXME: remove rockspec, fix wercker.yml and Dockerfile
-  "lua-websockets",
-  "magic",
   "rapidjson",
   "yaml",
 }

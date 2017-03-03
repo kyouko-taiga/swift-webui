@@ -24,6 +24,7 @@ RUN apk add --no-cache --virtual .build-deps \
         readline-dev \
         zlib-dev \
         py2-pip \
+        nodejs \
  && apk add --no-cache \
         bash \
         curl \
@@ -32,6 +33,7 @@ RUN apk add --no-cache --virtual .build-deps \
         libstdc++ \
         ncurses \
         openssh-keygen \
+        openssh-client \
         openssl \
         perl \
         readline \
@@ -61,8 +63,14 @@ RUN apk add --no-cache --virtual .build-deps \
  && ln -sf /dev/stdout /usr/local/openresty/nginx/logs/access.log \
  && ln -sf /dev/stderr /usr/local/openresty/nginx/logs/error.log \
  && cd /src/webui/ \
+ && mkdir -p static/build \
+ && npm install \
+ && npm run build \
+ && npm run css \
+ && mkdir -p /www \
  && cp lapis/*        / \
- && cp -r assets      /assets \
+ && cp -r views       /views \
+ && cp -r static      /www/static \
  && luarocks install  rockspec/netstring-1.0.3-0.rockspec \
  && luarocks install  rockspec/lua-resty-qless-develop-0.rockspec \
  && luarocks install  rockspec/lua-websockets-develop-0.rockspec \
