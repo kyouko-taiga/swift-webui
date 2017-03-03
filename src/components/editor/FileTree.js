@@ -11,80 +11,73 @@ class FileTree extends React.Component {
         super()
     }
 
-    render() {
-        const nodes = makeNodes(
-            this.props.files,
-            this.props.editor.activeFile,
-            this.props.dispatch)
+    makeNodes(arborescence, depth=0) {
+        let nodes = []
+        const indentation = Array(depth).fill().map(
+            (_, i) => <span key={i} className="sw-filetree-indent"></span>)
 
+        for (let node of Object.keys(arborescence).sort()) {
+            if ('mimetype' in arborescence[node]) {
+                const file = arborescence[node]
+                const classnames = classNames({
+                    'active': this.props.editor.activeFile == file.path
+                })
+                const tag = file.__modified__
+                    ? <span className="sw-tag sw-tag-modified" />
+                    : null
+
+                const handleClick = (e) => {
+                    e.preventDefault()
+                    this.props.dispatch(editorActions.changeActiveFile(file.path))
+                }
+
+                nodes.push(
+                    <li key={`${node}${depth}`} onClick={handleClick} className={classnames}>
+                        { indentation }
+                        <i className="fa fa-fw fa-file-text-o" /> { file.name }
+                        <div className="pull-right">{ tag }</div>
+                    </li>
+                )
+            } else {
+                const directory = arborescence[node]
+                const opened = this.props.openedDirectories[directory.path] || false
+                const iconClass = 'fa fa-fw fa-folder' + (opened ? '-open' : '') + '-o'
+
+                const handleClick = (e) => {
+                    e.preventDefault()
+                    this.props.dispatch(editorActions.toggleDirectory(directory.path, opened))
+                }
+
+                nodes.push(
+                    <li key={`${node}${depth}`} onClick={handleClick}>
+                        {indentation}
+                        <i className={iconClass} /> {node}
+                    </li>
+                )
+
+                if (opened) {
+                    nodes = nodes.concat(this.makeNodes(arborescence[node].files, depth + 1))
+                }
+            }
+        }
+
+        return nodes
+    }
+
+    render() {
         return (
-            <div>
-                <div className="panel panel-info">
-                    <div className="panel-heading">
-                        <i className="fa fa-fw fa-code-fork" />
-                        { this.props.repository.name }/{ this.props.repository.activeBranch }
-                    </div>
-                    <ul className="sw-filetree">
-                        { nodes }
-                    </ul>
+            <div className="sw-filetree">
+                <div className="sw-filetree-heading">
+                    <i className="fa fa-fw fa-code-fork" />
+                    { this.props.repository.name }/{ this.props.repository.activeBranch }
                 </div>
+                <ul>
+                    {this.makeNodes(this.props.files)}
+                </ul>
             </div>
         )
     }
 
-}
-
-
-function makeNodes(arborescence, activeFile, dispatch, depth=0) {
-    let nodes = []
-    const indentation = Array(depth).fill().map(
-        (_, i) => <span key={i} className="sw-filetree-indent"></span>)
-
-    for (let node of Object.keys(arborescence).sort()) {
-        if ('mimetype' in arborescence[node]) {
-            const file = arborescence[node]
-            const classnames = classNames({'active': activeFile == file.path})
-            const tag = file.__modified__
-                ? <span className="sw-tag sw-tag-modified" />
-                : null
-
-            function handleClick(e) {
-                e.preventDefault()
-                dispatch(editorActions.changeActiveFile(file.path))
-            }
-
-            nodes.push(
-                <li key={`${node}${depth}`} onClick={handleClick} className={classnames}>
-                    { indentation }
-                    <i className="fa fa-fw fa-file-text-o" /> { file.name }
-                    <div className="pull-right">{ tag }</div>
-                </li>
-            )
-        } else {
-            const directory = arborescence[node]
-            const collapsed = directory.collapsed
-            const iconClass = 'fa fa-fw fa-folder' + (!collapsed ? '-open' : '') + '-o'
-
-            function handleClick(e) {
-                e.preventDefault()
-                dispatch(editorActions.toggleDirectory(directory.path, !directory.collapsed))
-            }
-
-            nodes.push(
-                <li key={`${node}${depth}`} onClick={handleClick}>
-                    { indentation }
-                    <i className={iconClass} /> { node }
-                </li>
-            )
-
-            if (!collapsed) {
-                nodes = nodes.concat(makeNodes(
-                    arborescence[node].files, activeFile, dispatch, depth + 1))
-            }
-        }
-    }
-
-    return nodes
 }
 
 
@@ -103,7 +96,8 @@ function dereferencedArborescence(arborescence, state) {
 function stateToProps(state) {
     return {
         repository: state.repository,
-        files: dereferencedArborescence(state.editor.arborescence, state),
+        files: dereferencedArborescence(state.arborescence, state),
+        openedDirectories: state.editor.openedDirectories,
         editor: state.editor
     }
 }

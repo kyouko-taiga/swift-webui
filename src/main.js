@@ -1,3 +1,4 @@
+import 'babel-polyfill'
 import './polyfills/fetch'
 import './polyfills/object'
 

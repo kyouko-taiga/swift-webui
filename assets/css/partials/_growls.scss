@@ -17,23 +17,23 @@
     box-shadow: 0px 0px 5px 0px rgba(39, 49, 53, .6);
 
     &.info {
-        background: $brand-info;
+        background: $sw-info;
     }
 
     &.success {
-        background: $brand-success;
+        background: $sw-success;
     }
 
     &.primary {
-        background: $brand-primary;
+        background: $sw-primary;
     }
 
     &.warning {
-        background: $brand-warning;
+        background: $sw-warning;
     }
 
     &.danger {
-        background: $brand-danger;
+        background: $sw-danger;
     }
 
     &.on-enter {

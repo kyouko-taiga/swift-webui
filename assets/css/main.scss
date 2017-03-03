@@ -4,11 +4,22 @@
 
 @import "vendor/bootstrap/stylesheets/bootstrap";
 
+@import "variables";
+
+@import "partials/editor";
 @import "partials/growls";
+@import "partials/panes";
 
 
 body {
-    margin-top: 20px;
+    background-color: $sw-body-bg;
+    color: $sw-text-color;
+}
+
+.sw-root {
+    position: relative;
+    height: 100vh;
+    padding: 10px;
 }
 
 .panel {
@@ -21,89 +32,4 @@ body {
 
 .btn {
     border-radius: 0;
-}
-
-ul.sw-filetree {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-
-    li {
-        padding: 5px 10px;
-        cursor: pointer;
-
-        &:hover, &.active {
-            background-color: #eee;
-        }
-    }
-
-    .sw-filetree-indent {
-        display: inline-block;
-        width: 1.28571429em;
-    }
-}
-
-
-.sw-tag {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: #999;
-
-    &.sw-tag-modified {
-        background-color: #5bc0de;
-    }
-}
-
-.sw-editor-tabs > li {
-    & > span {
-        position: relative;
-        display: block;
-        padding: 10px 15px;
-        line-height: 1.42857143;
-        border: 1px solid transparent;
-        border-bottom: none;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-
-        .sw-close-span {
-            display: block;
-            position: absolute;
-            right: 0;
-            top: 0;
-            padding: 8px;
-
-            & > * {
-                position: absolute;
-                right: 0;
-                width: 24px;
-                padding: 2px;
-                text-align: center;
-            }
-
-            .sw-close-button {
-                display: inline-block;
-                opacity: 0;
-                transition: opacity 0.1s linear;
-                color: inherit;
-                background: white;
-            }
-        }
-
-        &:hover > .sw-close-span > .sw-close-button {
-            opacity: 1;
-        }
-    }
-
-    &.active > span {
-        background: #272822;
-        color: #f8f8f2;
-
-        .sw-close-span > .sw-close-button {
-            background: #272822;
-        }
-    }
 }
