@@ -5,6 +5,7 @@ import { changeActiveFile } from '../../../actions/editor'
 import Terminal from './Terminal'
 import { Errors } from './Terminal/const'
 import * as Util from './Terminal/util'
+import commandsFactory from './commands'
 
 
 class Shell extends Terminal {
@@ -35,7 +36,7 @@ class Shell extends Terminal {
             }
         }
 
-        this.extensions = { open }
+        this.extensions = { ...commandsFactory(props.dispatch), open }
     }
 
     render() {

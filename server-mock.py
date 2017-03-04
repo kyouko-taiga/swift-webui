@@ -1,9 +1,19 @@
 import json
 
 from flask import Flask, current_app, jsonify, request
+from subprocess import check_output
 
 
 database = {
+    'repositories': [{
+        'id': '12345',
+        'name': 'swift-webui',
+        'activeBranch': 'master'
+    }, {
+        'id': '67890',
+        'name': 'koala',
+        'activeBranch': 'master'
+    }],
     'files': [{
         'mimetype': 'text/x-markdown',
         'path': 'README.md',
@@ -57,6 +67,11 @@ def index():
         return f.read()
 
 
+@app.route('/api/repositories/')
+def list_repositories():
+    return jsonify_list(database['repositories'])
+
+
 @app.route('/api/repositories/<repository_id>/files/')
 def list_files(repository_id):
     return jsonify_list(database['files'])
@@ -72,6 +87,16 @@ def patch_files(repository_id, file_path):
             return jsonify(database['files'][i])
 
     raise ApiError('file not found', 404)
+
+
+@app.route('/api/bash/execute', methods=['POST'])
+def bash_execute():
+    post_data = request.get_json(force=True)
+    command = post_data['command']
+
+    return jsonify({
+        'stdout': check_output(command.split()).decode()
+    })
 
 
 if __name__ == '__main__':
