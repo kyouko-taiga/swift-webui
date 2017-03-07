@@ -1,82 +1,63 @@
-FROM alpine:edge
+FROM python:3.5
 
-ARG RESTY_VERSION="1.11.2.1"
-ARG RESTY_OPENSSL_VERSION="1.0.2j"
-ARG RESTY_PCRE_VERSION="8.39"
-ARG RESTY_J="1"
-ARG RESTY_CONFIG_OPTIONS="\
-    --with-ipv6 \
-    --with-pcre-jit \
-    --with-threads \
-    --with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION} \
-    --with-pcre=/tmp/pcre-${RESTY_PCRE_VERSION} \
-    --with-luajit=/usr \
-    "
+# Install python dependencies
+COPY ./requirements.txt /requirements.txt
+RUN \
+   pip install uwsgi && \
+   pip install -r requirements.txt
 
-ADD . /src/webui
+# Install npm.
+RUN \
+   apt-get update && \
+   apt-get install -y nodejs && \
+   rm -rf /var/lib/apt/lists/*
 
-RUN apk add --no-cache --virtual .build-deps \
-        build-base \
-        cmake \
-        make \
-        openssl-dev \
-        perl-dev \
-        readline-dev \
-        zlib-dev \
-        py2-pip \
-        nodejs \
- && apk add --no-cache \
-        bash \
-        curl \
-        git \
-        libgcc \
-        libstdc++ \
-        ncurses \
-        openssh-keygen \
-        openssh-client \
-        openssl \
-        perl \
-        readline \
-        unzip \
-        zip \
-        zlib \
- && pip install hererocks \
- && hererocks --luajit=2.1 --luarocks=^ /usr \
- && luarocks install luasec \
- && cd /tmp \
- && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
- && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
- && curl -fSL https://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-${RESTY_PCRE_VERSION}.tar.gz -o pcre-${RESTY_PCRE_VERSION}.tar.gz \
- && tar xzf pcre-${RESTY_PCRE_VERSION}.tar.gz \
- && curl -fSL https://openresty.org/download/openresty-${RESTY_VERSION}.tar.gz -o openresty-${RESTY_VERSION}.tar.gz \
- && tar xzf openresty-${RESTY_VERSION}.tar.gz \
- && cd /tmp/openresty-${RESTY_VERSION} \
- && ./configure -j${RESTY_J} ${RESTY_CONFIG_OPTIONS} \
- && make -j${RESTY_J} \
- && make -j${RESTY_J} install \
- && cd /tmp \
- && rm -rf \
-       openssl-${RESTY_OPENSSL_VERSION} \
-       openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
-       openresty-${RESTY_VERSION}.tar.gz openresty-${RESTY_VERSION} \
-       pcre-${RESTY_PCRE_VERSION}.tar.gz pcre-${RESTY_PCRE_VERSION} \
- && ln -sf /dev/stdout /usr/local/openresty/nginx/logs/access.log \
- && ln -sf /dev/stderr /usr/local/openresty/nginx/logs/error.log \
- && cd /src/webui/ \
- && mkdir -p static/build \
- && npm install \
- && npm run build \
- && npm rebuild node-sass \
- && npm run css \
- && mkdir -p /www \
- && cp lapis/*        / \
- && cp -r views       /views \
- && cp -r static      /www/static \
- && luarocks install  rockspec/netstring-1.0.3-0.rockspec \
- && luarocks install  rockspec/lua-resty-qless-develop-0.rockspec \
- && luarocks install  rockspec/lua-websockets-develop-0.rockspec \
- && luarocks make     rockspec/webui-master-1.rockspec \
- && rm -rf            /src/webui \
- && apk del           .build-deps
+# Install Nginx
+RUN \
+   apt-get update && \
+   apt-get install -y nginx && \
+   rm -rf /var/lib/apt/lists/*
 
-ENV PATH /usr/local/openresty/bin/:$PATH
+# Forward request and error logs to docker log collector
+RUN \
+   ln -sf /dev/stdout /var/log/nginx/access.log && \
+   ln -sf /dev/stderr /var/log/nginx/error.log
+
+# Make Nginx run on the foreground
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf
+
+# Override the default configuration for Nginx
+RUN   rm /etc/nginx/sites-available/default
+COPY  conf/default /etc/nginx/sites-available/default
+# RUN   ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled
+
+# Copy the base uWSGI ini file to enable default dynamic uwsgi process number
+COPY conf/uwsgi.ini /etc/uwsgi/
+
+# Expose Nginx ports
+EXPOSE 80 443
+
+# Install Supervisord
+RUN \
+   apt-get update && \
+   apt-get install -y supervisor && \
+   rm -rf /var/lib/apt/lists/*
+
+# Custom Supervisord config
+COPY conf/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+COPY ./umiushi       /umiushi
+COPY ./main.py       /main.py
+COPY ./manage.py     /manage.py
+COPY ./.settings.py  /umiushi/settings.py
+WORKDIR /
+
+# Build umiushi.
+RUN \
+   python manage.py db sync && \
+   mkdir -p static/build
+#   npm install && \
+#   npm run build && \
+#   npm run css
+
+CMD ["/usr/bin/supervisord"]

@@ -1,0 +1,6 @@
+eventlet
+flask
+flask-socketio
+python-magic
+requests
+sqlalchemy
