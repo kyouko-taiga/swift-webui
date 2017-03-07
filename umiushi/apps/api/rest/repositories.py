@@ -10,8 +10,8 @@ from flask import Blueprint, abort, current_app, send_file
 from flask import request as flask_request
 from werkzeug.security import safe_join
 
-from webenvy.core.auth import require_auth
-from webenvy.core.utils.responses import jsonify_list
+from umiushi.core.auth import require_auth
+from umiushi.core.utils.responses import jsonify_list
 
 from ..exc import ApiError
 

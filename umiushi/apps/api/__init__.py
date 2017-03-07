@@ -1,6 +1,6 @@
 from flask import jsonify
 
-from webenvy import factory
+from umiushi import factory
 
 
 def create_app(debug=False):

@@ -1,38 +1,28 @@
 version: "2"
 services:
   postgres:
-    image: postgres
-  redis:
-    image: redis:3.0.7 # because of bug in qless
+    image: postgres:alpine
   proxy:
     image: shipyard/docker-proxy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      PORT: 8080
-  webui:
+  umiushi:
     env_file: .environment
     build:
       context: .
       dockerfile: Dockerfile-quick
-    entrypoint: webui
+    entrypoint: /src/bin/umiushi
+    working_dir: /src
     ports:
       - "8080:8080"
     links:
       - postgres
-      - redis
-    depends_on:
-      - postgres
-      - redis
-    volumes:
-      - /tmp:/data
+      - proxy
     logging:
       driver: "json-file"
     environment:
-      DATA_DIRECTORY:     "/tmp"
-      REDIS_PORT:         "tcp://redis:6379"
+      DOCKER_PORT:        "tcp://proxy:2375"
       POSTGRES_PORT:      "tcp://postgres:5432"
       POSTGRES_USER:      postgres
       POSTGRES_PASSWORD:  ""
       POSTGRES_DATABASE:  postgres
-      DOCKER_PORT:        "tcp://proxy:8080"

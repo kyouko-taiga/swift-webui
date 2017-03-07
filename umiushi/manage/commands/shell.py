@@ -1,6 +1,6 @@
 import code
 
-from webenvy.factory import create_app
+from umiushi.factory import create_app
 
 
 class Command(object):

@@ -4,8 +4,8 @@ from flask import Flask
 
 from sqlalchemy import create_engine
 
-from webenvy.core.db import db_session
-from webenvy.core.utils.app import register_blueprints
+from umiushi.core.db import db_session
+from umiushi.core.utils.app import register_blueprints
 
 
 def remove_db_session(exception=None):
@@ -25,8 +25,8 @@ def create_app(package_name, package_path=None, debug=False):
     """
     app = Flask(package_name, instance_relative_config=True)
 
-    app.config.from_object('webenvy.settings')
-    app.config.from_envvar('WEBENVY_SETTINGS', silent=True)
+    app.config.from_object('umiushi.settings')
+    app.config.from_envvar('umiushi_SETTINGS', silent=True)
 
     if debug:
         app.debug = debug

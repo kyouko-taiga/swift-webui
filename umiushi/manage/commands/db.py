@@ -1,7 +1,7 @@
 import argparse
 
-from webenvy.core.db.utils import db_sync
-from webenvy.factory import create_app
+from umiushi.core.db.utils import db_sync
+from umiushi.factory import create_app
 
 
 class Command():

@@ -8,8 +8,8 @@ from flask import Blueprint, abort, current_app, redirect, session, url_for
 from flask import request as flask_request
 from itsdangerous import URLSafeSerializer
 
-from webenvy.core.db import db_session
-from webenvy.core.db.models import User
+from umiushi.core.db import db_session
+from umiushi.core.db.models import User
 
 
 bp = Blueprint('auth', __name__)

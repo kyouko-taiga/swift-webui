@@ -3,8 +3,8 @@ from functools import wraps
 from flask import current_app, request, session
 from itsdangerous import BadSignature, SignatureExpired, TimestampSigner
 
-from webenvy.core.db.models import User
-from webenvy.core.exc import InvalidTokenError
+from umiushi.core.db.models import User
+from umiushi.core.exc import InvalidTokenError
 
 
 def parse_auth_token():

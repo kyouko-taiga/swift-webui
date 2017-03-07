@@ -1,0 +1,5 @@
+#! /bin/bash
+
+dockerize -wait tcp://postgres:5432 -wait tcp://proxy:2375
+python3 manage.py db sync
+python3 manage.py server run

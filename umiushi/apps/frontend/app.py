@@ -3,7 +3,7 @@ from functools import wraps
 from flask import Blueprint, current_app, redirect, render_template, session, url_for
 from itsdangerous import TimestampSigner
 
-from webenvy.core.auth import parse_auth_token
+from umiushi.core.auth import parse_auth_token
 
 
 bp = Blueprint('app', __name__)

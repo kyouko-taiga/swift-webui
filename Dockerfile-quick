@@ -1,8 +1,3 @@
-FROM webui-dev
+FROM umiushi-dev
 
-ADD . /src/webui
-RUN cd /src/webui/ \
- && cp lapis/*     / \
- && cp -r views    /views \
- &&  luarocks make rockspec/webui-master-1.rockspec \
- &&  rm -rf        /src/webui
+ADD . /src

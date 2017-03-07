@@ -1,9 +1,9 @@
 
-class WebenvyError(Exception):
+class umiushiError(Exception):
     """Generic error class."""
 
 
-class AuthenticationError(WebenvyError):
+class AuthenticationError(umiushiError):
     """Raised when an error related to authentication occured."""
 
 

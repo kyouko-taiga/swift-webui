@@ -1,4 +1,4 @@
-from webenvy.manage import Manage
+from umiushi.manage import Manage
 
 
 def main():

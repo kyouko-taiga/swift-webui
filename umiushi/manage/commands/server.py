@@ -3,9 +3,9 @@ import argparse
 from werkzeug.serving import run_simple
 from werkzeug.wsgi import DispatcherMiddleware
 
-from webenvy import factory
-from webenvy.apps import api, frontend
-from webenvy.core.socketio import socketio
+from umiushi import factory
+from umiushi.apps import api, frontend
+from umiushi.core.socketio import socketio
 
 
 class Command():
@@ -33,11 +33,13 @@ class Command():
             help='Start the server in debug mode.')
 
         # Parse and execute the command line.
+        print("before parse")
         args = parser.parse_args(self.argv[1:])
 
         if args.subcommand == 'run':
+            print("ici")
             app = factory.create_app(__name__)
-
+            print("la")
             # Mount the Flask apps using DispatcherMiddleware.
             app.wsgi_app = DispatcherMiddleware(
                 frontend.create_app(debug=args.debug),
@@ -45,7 +47,7 @@ class Command():
                     '/api': api.create_app(debug=args.debug)
                 }
             )
-
+            print("here", args.host, args.port)
             # Run the server.
             socketio.init_app(app)
             socketio.run(app, host=args.host, port=args.port, debug=args.debug)

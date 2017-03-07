@@ -1,7 +1,7 @@
-from webenvy.core.exc import WebenvyError
+from umiushi.core.exc import umiushiError
 
 
-class ApiError(WebenvyError):
+class ApiError(umiushiError):
 
     def __init__(self, message=''):
         self.message = message
