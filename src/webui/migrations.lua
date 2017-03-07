@@ -8,6 +8,7 @@ return {
       { "email"      , Schema.types.text    { null        = true } },
       { "public_key" , Schema.types.text    { null        = true } },
       { "private_key", Schema.types.text    { null        = true } },
+      { "login"      , Schema.types.text },
     })
   end,
   function ()

@@ -49,7 +49,7 @@ function User.perform (job)
       })))
       local public_key, private_key
       do
-        local file = assert (io.open (filename, "r"))
+        local file  = assert (io.open (filename, "r"))
         private_key = file:read "*a"
         file:close ()
       end

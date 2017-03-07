@@ -97,6 +97,7 @@ app:match ("/register", function (self)
     assert (Model.accounts:create {
       id    = user.id,
       token = token.access_token,
+      login = user.login,
     })
     assert (os.mkdir (Config.data.inside .. "/" .. user.login))
   end) then
@@ -104,6 +105,7 @@ app:match ("/register", function (self)
       id = user.id,
     }:update {
       token = token.access_token,
+      login = user.login,
     })
   end
   local qless = Qless.new (Config.redis)
@@ -156,9 +158,9 @@ app:match ("/api/repositories/:owner/:repository", function (self)
   or self.session.user.login ~= self.params.owner then
     return { status = 403 }
   end
-  local user_info = Model.accounts:find {
+  local user_info = assert (Model.accounts:find {
     id = self.session.user.id,
-  }
+  })
   local repository, status
   for _, token in ipairs { user_info.token, Config.application.token } do
     repository, status = Http {
@@ -277,37 +279,36 @@ app:match ("/api/repositories/:owner/:repository/*", respond_to {
   end,
 })
 
-local types = {
-  stdin  = "shell",
-  stdout = "shell",
-  stderr = "shell",
-  notify = "notify",
-}
-
 app:match ("/streams/:owner/:repository/:type", function (self)
   if not self.session.user
   or self.session.user.login ~= self.params.owner then
     return { status = 403 }
   end
-  if not types [self.params.type] then
-    return { status = 400 }
-  end
   local repository_info = Model.repositories:find {
     owner = self.params.owner,
     name  = self.params.repository,
   }
-  if types [self.params.type] == "shell" then
+  if self.params.type == "shell" then
     if not repository_info
     or not repository_info.shell then
       return { status = 404 }
     end
-    _G.ngx.var.target = Et.render ("ws://<%- host %>:<%- port %>/containers/<%- container %>/attach/ws?<%- type %>=true&stream=true", {
-      host      = Config.docker.host,
-      port      = Config.docker.port,
-      container = repository_info.docker,
-      type      = self.params.type,
+    local state, status = Http {
+      method = "GET",
+      url    = Et.render ("http://<%- host %>:<%- port %>/containers/<%- container %>/json", {
+        host      = Config.docker.host,
+        port      = Config.docker.port,
+        container = repository_info.shell,
+      }),
+    }
+    assert (status == 200, status)
+    assert (state.State.Running)
+    local data = ((state.NetworkSettings.Ports ["8080/tcp"] or {}) [1] or {})
+    _G.ngx.var.target = Et.render ("http://<%- host %>:<%- port %>/wetty", {
+      host = data.HostIp,
+      port = data.HostPort,
     })
-  elseif types [self.params.type] == "notify" then
+  elseif self.params.type == "notify" then
     if not repository_info
     or not repository_info.notify then
       return { status = 404 }
@@ -323,12 +324,12 @@ app:match ("/streams/:owner/:repository/:type", function (self)
     assert (status == 200, status)
     assert (state.State.Running)
     local data = ((state.NetworkSettings.Ports ["8080/tcp"] or {}) [1] or {})
-    _G.ngx.var.target = Et.render ("ws://<%- host %>:<%- port %>", {
+    _G.ngx.var.target = Et.render ("http://<%- host %>:<%- port %>", {
       host = data.HostIp,
       port = data.HostPort,
     })
   else
-    assert (false)
+    return { status = 400 }
   end
 end)
 

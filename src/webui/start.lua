@@ -7,7 +7,6 @@ local Model    = require "webui.model"
 local Posix    = require "posix"
 local Redis    = require "resty.redis"
 local Yaml     = require "yaml"
-local Client   = require "resty.websocket.client"
 
 local Start = {}
 
@@ -21,14 +20,6 @@ local gitconfig = [[
 [core]
   preloadindex = true
   mergeoptions = --no-edit
-]]
-
-local gitclone = [[
-mkdir -p $HOME/.ssh
-cp /data/.ssh/* $HOME/.ssh/
-chmod 400 $HOME/.ssh/id_rsa
-ssh-keyscan -H github.com >> $HOME/.ssh/known_hosts
-git clone "git@github.com:<%- owner %>/<%- repository %>.git"
 ]]
 
 function Start.perform (job)
@@ -66,7 +57,7 @@ function Start.perform (job)
         contents = Yaml.load (Mime.unb64 (contents.content))
       else
         contents = {
-          image = "swift",
+          image = "umiushi-swift",
         }
       end
       image = assert (contents.image)
@@ -97,6 +88,7 @@ function Start.perform (job)
     do
       job:heartbeat ()
       local _
+      ::container::
       local service, status = Http {
         url    = Et.render ("http://<%- host %>:<%- port %>/containers/create", {
           host = Config.docker.host,
@@ -104,7 +96,11 @@ function Start.perform (job)
         }),
         method = "POST",
         body   = {
-          Entrypoint   = "/bin/bash",
+          Entrypoint   = "umiushi",
+          Cmd          = {
+            user.login,
+            repository.name,
+          },
           Image        = image,
           HostConfig   = {
             PublishAllPorts = true,
@@ -118,6 +114,21 @@ function Start.perform (job)
           Tty          = false,
         },
       }
+      if status == 404 then
+        _, status = Http {
+          url    = Et.render ("http://<%- host %>:<%- port %>/images/create", {
+            host = Config.docker.host,
+            port = Config.docker.port,
+          }),
+          method = "POST",
+          query  = {
+            fromImage = image,
+            tag       = "latest",
+          },
+        }
+        assert (status == 200)
+        goto container
+      end
       assert (status == 201, status)
       _, status = Http {
         method = "POST",
@@ -128,27 +139,6 @@ function Start.perform (job)
         }),
       }
       assert (status == 204, status)
-      local stdin  = assert (Client:new ())
-      local stdout = assert (Client:new ())
-      local stderr = assert (Client:new ())
-      assert (stderr:connect (Et.render ("ws://<%- host %>:<%- port %>/containers/<%- container %>/attach/ws?<%- type %>=true&stream=true", {
-        host      = Config.docker.host,
-        port      = Config.docker.port,
-        container = service.Id,
-        type      = "stderr",
-      })))
-      assert (stdout:connect (Et.render ("ws://<%- host %>:<%- port %>/containers/<%- container %>/attach/ws?<%- type %>=true&stream=true", {
-        host      = Config.docker.host,
-        port      = Config.docker.port,
-        container = service.Id,
-        type      = "stdout",
-      })))
-      assert (stdin:connect (Et.render ("ws://<%- host %>:<%- port %>/containers/<%- container %>/attach/ws?<%- type %>=true&stream=true", {
-        host      = Config.docker.host,
-        port      = Config.docker.port,
-        container = service.Id,
-        type      = "stdin",
-      })))
       while true do
         local state, state_status = Http {
           method = "GET",
@@ -167,20 +157,6 @@ function Start.perform (job)
         assert (not state.State.Paused)
         _G.ngx.sleep (1)
       end
-      assert (stdin:send_text (Et.render (gitclone, {
-        owner          = user.login,
-        repository     = repository.name,
-      })))
-      -- Do not know why it seems to work when stdout/stderr streams are read...
-      local lines = {}
-      stdout:set_timeout (500)
-      repeat
-        local line = stdout:recv_frame ()
-        lines [#lines+1] = line
-      until not line
-      stdin :send_close ()
-      stdout:send_close ()
-      stderr:send_close ()
       assert (info:update {
         shell = service.Id,
       })
@@ -188,6 +164,8 @@ function Start.perform (job)
 
     do
       job:heartbeat ()
+      ::container::
+      local _
       local service, status = Http {
         url    = Et.render ("http://<%- host %>:<%- port %>/containers/create", {
           host = Config.docker.host,
@@ -209,7 +187,21 @@ function Start.perform (job)
           WorkingDir   = "/data",
         },
       }
-      assert (status == 201, status)
+      if status == 404 then
+        _, status = Http {
+          url    = Et.render ("http://<%- host %>:<%- port %>/images/create", {
+            host = Config.docker.host,
+            port = Config.docker.port,
+          }),
+          method = "POST",
+          query  = {
+            fromImage = "saucisson/ws-inotify",
+            tag       = "latest",
+          },
+        }
+        assert (status == 200)
+        goto container
+      end
       local _
       _, status = Http {
         method = "POST",
