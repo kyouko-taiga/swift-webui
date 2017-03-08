@@ -1,0 +1,17 @@
+FROM umiushi-dev
+
+ADD . /src
+
+RUN true \
+ && rm -rf /umiushi \
+ && cp -r /src/umiushi   /umiushi \
+ && cp /src/umiushi.sh   /umiushi.sh \
+ && cp /src/main.py      /main.py \
+ && cp /src/manage.py    /manage.py \
+ && cp /src/conf/nginx.conf       /etc/nginx/nginx.conf \
+ && cp /src/conf/supervisord.conf /etc/supervisord.conf \
+ && cp /src/conf/uwsgi.ini        /etc/uwsgi/uwsgi.ini \
+ && rm -rf /src \
+ && chown -R www-data:www-data /www \
+ && chown -R www-data:www-data /umiushi \
+ && true

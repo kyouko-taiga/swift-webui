@@ -1,0 +1,27 @@
+version: "2"
+services:
+  postgres:
+    image: postgres
+  docker:
+    image: shipyard/docker-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      PORT: 2375
+  umiushi:
+    env_file: .environment
+    build:
+      context: .
+      dockerfile: Dockerfile-quick
+    entrypoint: /umiushi.sh
+    ports:
+      - "8080:8080"
+    links:
+      - postgres
+      - docker
+    logging:
+      driver: "json-file"
+    environment:
+      DOCKER_URL:        "tcp://proxy:2375"
+      POSTGRES_URL:      "tcp://postgres:@postgres:5432"
+      POSTGRES_DATABASE: postgres

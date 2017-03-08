@@ -1,2 +1,4 @@
+.environment
+.git
 node_modules
 static/build

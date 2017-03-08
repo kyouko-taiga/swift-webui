@@ -1,63 +1,89 @@
-FROM python:3.5
+FROM alpine:edge
 
-# Install python dependencies
-COPY ./requirements.txt /requirements.txt
-RUN \
-   pip install uwsgi && \
-   pip install -r requirements.txt
+ADD . /src
 
-# Install npm.
-RUN \
-   apt-get update && \
-   apt-get install -y nodejs && \
-   rm -rf /var/lib/apt/lists/*
+ENV PATH /usr/bin/:$PATH
+ENV PATH /usr/local/openresty/bin/:$PATH
+ARG RESTY_VERSION="1.11.2.1"
 
-# Install Nginx
-RUN \
-   apt-get update && \
-   apt-get install -y nginx && \
-   rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache --virtual .build-deps \
+        build-base \
+        cmake \
+        libffi-dev \
+        linux-headers \
+        make \
+        musl-dev \
+        nodejs \
+        nodejs-npm \
+        pcre-dev \
+        postgresql-dev \
+        python3-dev \
+        readline-dev \
+        zlib-dev \
+ && apk add --no-cache \
+        bash \
+        curl \
+        git \
+        libffi \
+        libmagic \
+        libstdc++ \
+        openssl \
+        pcre \
+        perl \
+        postgresql-client \
+        python3 \
+        readline \
+        supervisor \
+        uwsgi \
+        uwsgi-python3 \
+        unzip \
+        zlib \
+ && apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ \
+        dockerize \
+ && addgroup -g 82 -S www-data \
+ && adduser -u 82 -D -S -G www-data www-data \
+ && pip3 install hererocks \
+ && hererocks --luajit=2.1 --luarocks=^ --compat=5.2 /usr \
+ && luarocks install luasec \
+ && cd /tmp \
+ && curl -fSL https://openresty.org/download/openresty-${RESTY_VERSION}.tar.gz -o openresty-${RESTY_VERSION}.tar.gz \
+ && tar xzf openresty-${RESTY_VERSION}.tar.gz \
+ && cd /tmp/openresty-${RESTY_VERSION} \
+ && ./configure --with-ipv6 \
+                --with-pcre-jit \
+                --with-threads \
+                --with-luajit=/usr \
+ && make \
+ && make install \
+ && rm -rf openresty-${RESTY_VERSION}.tar.gz openresty-${RESTY_VERSION} \
+ && ln -sf /dev/stdout /usr/local/openresty/nginx/logs/access.log \
+ && ln -sf /dev/stderr /usr/local/openresty/nginx/logs/error.log \
+ && cd /src \
+ && pip3 install -r requirements.txt \
+ && mkdir -p static/build \
+ && npm install \
+ && npm run build \
+ && npm rebuild node-sass \
+ && npm run css \
+ && mkdir -p /www \
+ && cp -r /src/static /www/static \
+ && rm -rf /src/node_modules \
+ && cp -r /src/umiushi   /umiushi \
+ && cp /src/umiushi.sh   /umiushi.sh \
+ && cp /src/main.py      /main.py \
+ && cp /src/manage.py    /manage.py \
+ && mkdir -p /etc/nginx /etc/uwsgi \
+ && cp /src/conf/nginx.conf       /etc/nginx/nginx.conf \
+ && cp /src/conf/supervisord.conf /etc/supervisord.conf \
+ && cp /src/conf/uwsgi.ini        /etc/uwsgi/uwsgi.ini \
+ && cd / \
+ && rm -rf /src \
+ && chown -R www-data:www-data /www \
+ && chown -R www-data:www-data /umiushi \
+ && apk del .build-deps \
+ && true
 
-# Forward request and error logs to docker log collector
-RUN \
-   ln -sf /dev/stdout /var/log/nginx/access.log && \
-   ln -sf /dev/stderr /var/log/nginx/error.log
-
-# Make Nginx run on the foreground
-RUN echo "daemon off;" >> /etc/nginx/nginx.conf
-
-# Override the default configuration for Nginx
-RUN   rm /etc/nginx/sites-available/default
-COPY  conf/default /etc/nginx/sites-available/default
-# RUN   ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled
-
-# Copy the base uWSGI ini file to enable default dynamic uwsgi process number
-COPY conf/uwsgi.ini /etc/uwsgi/
-
-# Expose Nginx ports
 EXPOSE 80 443
-
-# Install Supervisord
-RUN \
-   apt-get update && \
-   apt-get install -y supervisor && \
-   rm -rf /var/lib/apt/lists/*
-
-# Custom Supervisord config
-COPY conf/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-COPY ./umiushi       /umiushi
-COPY ./main.py       /main.py
-COPY ./manage.py     /manage.py
-COPY ./.settings.py  /umiushi/settings.py
 WORKDIR /
-
-# Build umiushi.
-RUN \
-   python manage.py db sync && \
-   mkdir -p static/build
-#   npm install && \
-#   npm run build && \
-#   npm run css
-
-CMD ["/usr/bin/supervisord"]
+ENTRYPOINT ["supervisord"]
+CMD ["-c", "/etc/supervisord.conf"]
