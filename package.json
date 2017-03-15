@@ -13,6 +13,8 @@
         "browserify": "latest",
         "clean-css": "latest",
         "clean-css-cli": "latest",
+        "eslint": "latest",
+        "eslint-plugin-react": "latest",
         "node-sass": "latest",
         "uglify-js": "latest",
         "watchify": "latest"
@@ -53,6 +55,8 @@
         "watch": "watchify src/main.js -o static/build/app.js -v -d",
 
         "css-debug": "node-sass assets/css/main.scss static/build/main.css",
-        "css": "node-sass assets/css/main.scss | cleancss -o static/build/main.css"
+        "css": "node-sass assets/css/main.scss | cleancss -o static/build/main.css",
+
+        "lint": "eslint src"
     }
 }
