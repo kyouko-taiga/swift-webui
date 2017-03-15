@@ -45,6 +45,7 @@ RUN apk add --no-cache --virtual .build-deps \
  && pip3 install hererocks \
  && hererocks --luajit=2.1 --luarocks=^ --compat=5.2 /usr \
  && luarocks install luasec \
+ && luarocks install jwt \
  && cd /tmp \
  && curl -fSL https://openresty.org/download/openresty-${RESTY_VERSION}.tar.gz -o openresty-${RESTY_VERSION}.tar.gz \
  && tar xzf openresty-${RESTY_VERSION}.tar.gz \
@@ -66,12 +67,11 @@ RUN apk add --no-cache --virtual .build-deps \
  && npm rebuild node-sass \
  && npm run css \
  && mkdir -p /www \
- && cp -r /src/static /www/static \
- && rm -rf /src/node_modules \
- && cp -r /src/umiushi   /umiushi \
- && cp /src/umiushi.sh   /umiushi.sh \
- && cp /src/main.py      /main.py \
- && cp /src/manage.py    /manage.py \
+ && cp -r /src/static  /www/static \
+ && cp -r /src/umiushi /umiushi \
+ && cp /src/umiushi.sh /umiushi.sh \
+ && cp /src/main.py    /main.py \
+ && cp /src/manage.py  /manage.py \
  && mkdir -p /etc/nginx /etc/uwsgi \
  && cp /src/conf/nginx.conf       /etc/nginx/nginx.conf \
  && cp /src/conf/supervisord.conf /etc/supervisord.conf \
