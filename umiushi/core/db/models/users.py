@@ -29,7 +29,7 @@ class Workspace(Base, Dictionarizable):
 
     __tablename__ = 'workspace'
 
-    _dictionarizable_attrs = ('name', 'language', 'owner')
+    _dictionarizable_attrs = ('id', 'name', 'language', 'owner')
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)

@@ -13,15 +13,10 @@ class WorkspaceList extends React.Component {
         }
 
         const workspaces = this.props.workspaces.map((workspace) => {
-            const handleClick = (e) => {
-                e.preventDefault()
-                this.props.onSelectWorkspace(workspace.id)
-            }
-
             return (
-                <li key={workspace.id}>
-                    <Link to={`/editor/${workspace.id}`}>{workspace.name}</Link>
-                </li>
+            <li key={workspace.id}>
+                <Link to={`/${workspace.name}/editor`}>{workspace.name}</Link>
+            </li>
             )
         })
 

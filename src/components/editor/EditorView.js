@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import SplitPane from 'react-split-pane'
 
-import { list as listRespositories } from '../../actions/workspaces'
+import { get as getWorkspace } from '../../actions/workspaces'
 
 import Editor from './Editor'
 import FileTree from './FileTree'
@@ -43,7 +43,7 @@ class EditorViewContainer extends React.Component {
 
     componentDidMount() {
         this.setState({ isFetching: true }, () => {
-            this.props.dispatch(listRespositories())
+            this.props.dispatch(getWorkspace(this.props.params.workspaceName))
                 .then((action) => {
                     this.setState({
                         isFetching: false,
@@ -69,7 +69,14 @@ class EditorViewContainer extends React.Component {
 
 
 function stateToProps(state, props) {
-    return { workspace: state.workspaces[props.params.workspaceId] }
+    // Find the workspace with the given name.
+    const wid = Object.keys(state.workspaces).filter((id) =>
+        state.workspaces[id].name == props.params.workspaceName
+    )[0]
+
+    return {
+        workspace: (typeof wid !== 'undefined') ? state.workspaces[wid] : undefined
+    }
 }
 
 export default connect(stateToProps)(EditorViewContainer)

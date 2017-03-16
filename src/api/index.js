@@ -44,7 +44,7 @@ function handleResponse(response, schema) {
             }
         })
         .catch(() => {
-            let exc = new ApiError(response.statusText, 'ApiError', `Error ${response.status}`)
+            let exc = new ApiError(response.statusText, `Error ${response.status}`, response.status)
             console.warn(exc)
             throw exc
         })
@@ -57,18 +57,23 @@ const wrapper = {
             get: () => fetch(`${API_ROOT}/workspaces/`)
                 .then((resp) => handleResponse(resp, [schemas.workspace]))
         }),
-        select: (workspaceName) => ({
-            get: () => fetch(`${API_ROOT}/workspaces/${workspaceName}`)
+        post: (entity) => fetch(`${API_ROOT}/workspaces/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(entity)
+        }),
+        select: (workspaceId) => ({
+            get: () => fetch(`${API_ROOT}/workspaces/${workspaceId}`)
                 .then((resp) => handleResponse(resp, schemas.workspace)),
             files: {
                 list: () => ({
-                    get: () => fetch(`${API_ROOT}/workspaces/${workspaceName}/`)
+                    get: () => fetch(`${API_ROOT}/workspaces/${workspaceId}/`)
                         .then((resp) => handleResponse(resp, [schemas.file]))
                 }),
                 select: (filePath) => ({
-                    get: () => fetch(`${API_ROOT}/workspaces/${workspaceName}/${filePath}`)
+                    get: () => fetch(`${API_ROOT}/workspaces/${workspaceId}/${filePath}`)
                         .then((resp) => handleResponse(resp, schemas.file)),
-                    patch: (entity) => fetch(`${API_ROOT}/workspaces/${workspaceName}/${filePath}`, {
+                    post: (entity) => fetch(`${API_ROOT}/workspaces/${workspaceId}/${filePath}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify(entity)

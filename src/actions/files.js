@@ -1,5 +1,5 @@
 import api from '../api'
-import { LIST_FILES, GET_FILE, PATCH_FILE } from './types'
+import { LIST_FILES, CREATE_FILE, GET_FILE } from './types'
 import { makeRequestCreator } from './factories'
 
 
@@ -14,6 +14,16 @@ export function list(workspaceName, {requestId} = {}) {
     )
 }
 
+export function create(file, {requestId} = {}) {
+    return makeRequestCreator(
+        CREATE_FILE,
+        api.workspaces.select(file.workspace).files.select(file.path).post(file),
+        {
+            args: {file},
+            requestId: requestId
+        }
+    )
+}
 
 export function get(workspaceName, filePath, {requestId} = {}) {
     return makeRequestCreator(
@@ -21,18 +31,6 @@ export function get(workspaceName, filePath, {requestId} = {}) {
         api.workspaces.select(workspaceName).files.select(filePath).get(),
         {
             args: {workspaceName, filePath},
-            requestId: requestId
-        }
-    )
-}
-
-
-export function post(file, {requestId} = {}) {
-    return makeRequestCreator(
-        PATCH_FILE,
-        api.workspaces.select(file.workspace).files.select(file.path).post(file),
-        {
-            args: {file},
             requestId: requestId
         }
     )

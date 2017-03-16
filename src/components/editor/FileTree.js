@@ -69,7 +69,7 @@ class FileTree extends React.Component {
             <div className="sw-filetree">
                 <div className="sw-filetree-heading">
                     <i className="fa fa-fw fa-code-fork" />
-                    { this.props.workspace.name }/{ this.props.workspace.activeBranch }
+                    { this.props.workspace.name }
                 </div>
                 <ul>
                     {this.makeNodes(this.props.files)}

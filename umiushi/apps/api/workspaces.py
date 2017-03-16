@@ -37,15 +37,15 @@ def create_workspace(auth):
     workspace_data = request.get_json(force=True)
 
     # Check for duplicate names.
-    workspace_name = workspace_data.get('name')
-    if any(wk.name == workspace_name for wk in auth.workspaces):
+    workspace_id = workspace_data.get('name')
+    if any(wk.name == workspace_id for wk in auth.workspaces):
         raise ApiError('duplicate name')
 
     # Create a new workspace.
     user_root = os.path.join(current_app.config['DATA_ROOT_URL'], auth.login)
     workspace = Workspace(
         owner    = auth,
-        name     = workspace_name,
+        name     = workspace_id,
         language = workspace_data.get('language'))
 
     db_session.add(workspace)
@@ -58,17 +58,17 @@ def create_workspace(auth):
     return jsonify(workspace.to_dict()), 201
 
 
-@bp.route('/workspaces/<workspace_name>')
+@bp.route('/workspaces/<workspace_id>')
 @require_auth
-def get_workspace(auth, workspace_name):
-    workspace = fetch_workspace(auth, workspace_name)
+def get_workspace(auth, workspace_id):
+    workspace = fetch_workspace(auth, workspace_id)
     return jsonify(workspace.to_dict())
 
 
-@bp.route('/workspaces/<workspace_name>', methods=['DELETE'])
+@bp.route('/workspaces/<workspace_id>', methods=['DELETE'])
 @require_auth
-def delete_workspace(auth, workspace_name):
-    workspace = fetch_workspace(auth, workspace_name)
+def delete_workspace(auth, workspace_id):
+    workspace = fetch_workspace(auth, workspace_id)
 
     # Delete the local files.
     shutil.rmtree(workspace.root_url)
@@ -80,18 +80,18 @@ def delete_workspace(auth, workspace_name):
     return '', 204
 
 
-@bp.route('/workspaces/<workspace_name>/')
+@bp.route('/workspaces/<workspace_id>/')
 @require_auth
-def list_files(auth, workspace_name):
+def list_files(auth, workspace_id):
     """
-    .. http:get:: /workspaces/(workspace_name)/
+    .. http:get:: /workspaces/(workspace_id)/
 
         Return the list of files in the given workspace.
 
         :return:
             A list of files.
     """
-    workspace = fetch_workspace(auth, workspace_name)
+    workspace = fetch_workspace(auth, workspace_id)
     print(workspace.root_url)
 
     files = []
@@ -114,18 +114,18 @@ def list_files(auth, workspace_name):
     return jsonify_list(files)
 
 
-@bp.route('/workspaces/<workspace_name>/<path:file_path>')
+@bp.route('/workspaces/<workspace_id>/<path:file_path>')
 @require_auth
-def get_file(auth, workspace_name, file_path):
+def get_file(auth, workspace_id, file_path):
     """
-    .. http:get:: /workspaces/(workspace_name)/(file_path)
+    .. http:get:: /workspaces/(workspace_id)/(file_path)
 
         Return the content of the file at the given path.
 
         :return:
             The content of the file.
     """
-    workspace = fetch_workspace(auth, workspace_name)
+    workspace = fetch_workspace(auth, workspace_id)
     file_path = safe_join(workspace.root_url, file_path)
     if not os.path.exists(file_path):
         abort(404)
@@ -150,8 +150,15 @@ def checksum(file_path):
     return h.hexdigest()
 
 
-def fetch_workspace(auth, workspace_name):
+def fetch_workspace(auth, workspace_id):
+
+
     for workspace in auth.workspaces:
-        if workspace.name == workspace_name:
+        if workspace.name == workspace_id:
             return workspace
+        try:
+            if workspace.id == int(workspace_id):
+                return workspace
+        except:
+            pass
     abort(404)
