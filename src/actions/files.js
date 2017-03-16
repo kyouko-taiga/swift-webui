@@ -3,34 +3,34 @@ import { LIST_FILES, GET_FILE, PATCH_FILE } from './types'
 import { makeRequestCreator } from './factories'
 
 
-export function list(repositoryId, {requestId} = {}) {
+export function list(workspaceName, {requestId} = {}) {
     return makeRequestCreator(
         LIST_FILES,
-        api.repositories.select(repositoryId).files.list().get(),
+        api.workspaces.select(workspaceName).files.list().get(),
         {
-            args: {repositoryId},
+            args: {workspaceName},
             requestId: requestId
         }
     )
 }
 
 
-export function get(repositoryId, filePath, {requestId} = {}) {
+export function get(workspaceName, filePath, {requestId} = {}) {
     return makeRequestCreator(
         GET_FILE,
-        api.repositories.select(repositoryId).files.select(filePath).get(),
+        api.workspaces.select(workspaceName).files.select(filePath).get(),
         {
-            args: {repositoryId, filePath},
+            args: {workspaceName, filePath},
             requestId: requestId
         }
     )
 }
 
 
-export function patch(file, {requestId} = {}) {
+export function post(file, {requestId} = {}) {
     return makeRequestCreator(
         PATCH_FILE,
-        api.repositories.select(file.repository).files.select(file.path).patch(file),
+        api.workspaces.select(file.workspace).files.select(file.path).post(file),
         {
             args: {file},
             requestId: requestId

@@ -12,7 +12,7 @@ const routes = {
         component: IndexView,
     },
     childRoutes: [{
-        path: 'editor/:repositoryId',
+        path: ':workspaceName/editor',
         component: EditorView
     }],
 }

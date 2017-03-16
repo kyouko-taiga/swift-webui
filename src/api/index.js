@@ -1,4 +1,3 @@
-import Bluebird from 'bluebird'
 import { normalize } from 'normalizr'
 
 import { API_ROOT } from '../constants'
@@ -12,9 +11,9 @@ class ExtendableError extends Error {
         this.name = name
         this.message = message
         if (typeof Error.captureStackTrace === 'function') {
-            Error.captureStackTrace(this, this.constructor);
+            Error.captureStackTrace(this, this.constructor)
         } else {
-            this.stack = (new Error(message)).stack;
+            this.stack = (new Error(message)).stack
         }
     }
 }
@@ -44,7 +43,7 @@ function handleResponse(response, schema) {
                 return {result: json}
             }
         })
-        .catch((err) => {
+        .catch(() => {
             let exc = new ApiError(response.statusText, 'ApiError', `Error ${response.status}`)
             console.warn(exc)
             throw exc
@@ -53,24 +52,24 @@ function handleResponse(response, schema) {
 
 
 const wrapper = {
-    repositories: {
+    workspaces: {
         list: () => ({
-            get: () => fetch(`${API_ROOT}/repositories/`)
-                .then((resp) => handleResponse(resp, [schemas.repository]))
+            get: () => fetch(`${API_ROOT}/workspaces/`)
+                .then((resp) => handleResponse(resp, [schemas.workspace]))
         }),
-        select: (repositoryId) => ({
-            get: () => fetch(`${API_ROOT}/repositories/${repositoryId}`)
-                .then((resp) => handleResponse(resp, schemas.repository)),
+        select: (workspaceName) => ({
+            get: () => fetch(`${API_ROOT}/workspaces/${workspaceName}`)
+                .then((resp) => handleResponse(resp, schemas.workspace)),
             files: {
                 list: () => ({
-                    get: () => fetch(`${API_ROOT}/repositories/${repositoryId}/files/`)
+                    get: () => fetch(`${API_ROOT}/workspaces/${workspaceName}/`)
                         .then((resp) => handleResponse(resp, [schemas.file]))
                 }),
                 select: (filePath) => ({
-                    get: () => fetch(`${API_ROOT}/repositories/${repositoryId}/files/${filePath}`)
+                    get: () => fetch(`${API_ROOT}/workspaces/${workspaceName}/${filePath}`)
                         .then((resp) => handleResponse(resp, schemas.file)),
-                    patch: (entity) => fetch(`${API_ROOT}/repositories/${repositoryId}/files/${filePath}`, {
-                        method: 'PATCH',
+                    patch: (entity) => fetch(`${API_ROOT}/workspaces/${workspaceName}/${filePath}`, {
+                        method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify(entity)
                     }).then((resp) => handleResponse(resp, schemas.file))

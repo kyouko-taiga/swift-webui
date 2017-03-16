@@ -1,10 +1,10 @@
 import { schema } from 'normalizr'
 
-const repository = new schema.Entity('repositories', {}, {idAttribute: 'id'})
+const workspace = new schema.Entity('workspaces', {}, {idAttribute: 'id'})
 const file = new schema.Entity('files', {}, {idAttribute: 'path'})
 
 
 export default {
-    repository,
+    workspace,
     file
 }

@@ -2,33 +2,32 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 
-import { list as listFiles } from '../../actions/files'
-import { list as listRespositories } from '../../actions/repositories'
+import { list as listWorkspaces } from '../../actions/workspaces'
 
 
-class RepositoryList extends React.Component {
+class WorkspaceList extends React.Component {
 
     render() {
         if (this.props.isFetching) {
-            return <p>"Just a moment, we're listing your repositories."</p>
+            return <p>"Just a moment, we're listing your workspaces."</p>
         }
 
-        const repositories = this.props.repositories.map((repository) => {
+        const workspaces = this.props.workspaces.map((workspace) => {
             const handleClick = (e) => {
                 e.preventDefault()
-                this.props.onSelectRepository(repository.id)
+                this.props.onSelectWorkspace(workspace.id)
             }
 
             return (
-                <li key={repository.id}>
-                    <Link to={`/editor/${repository.id}`}>{repository.name}</Link>
+                <li key={workspace.id}>
+                    <Link to={`/editor/${workspace.id}`}>{workspace.name}</Link>
                 </li>
             )
         })
 
         return (
-            <div className="sw-repository-list">
-                <ul>{repositories}</ul>
+            <div className="sw-workspace-list">
+                <ul>{workspaces}</ul>
             </div>
         )
     }
@@ -36,7 +35,7 @@ class RepositoryList extends React.Component {
 }
 
 
-class RepositoryListContainer extends React.Component {
+class WorkspaceListContainer extends React.Component {
 
     constructor() {
         super()
@@ -49,7 +48,7 @@ class RepositoryListContainer extends React.Component {
     componentDidMount() {
         this.setState({isFetching: true})
 
-        this.props.dispatch(listRespositories())
+        this.props.dispatch(listWorkspaces())
             .then((action) => {
                 this.setState({
                     isFetching: false,
@@ -60,7 +59,7 @@ class RepositoryListContainer extends React.Component {
 
     render() {
         return (
-            <RepositoryList
+            <WorkspaceList
               {...this.props}
               {...this.state}
             />
@@ -72,15 +71,15 @@ class RepositoryListContainer extends React.Component {
 
 function stateToProps(state) {
     return {
-        repositories: Object.keys(state.repositories)
+        workspaces: Object.keys(state.workspaces)
             .sort((lhs, rhs) => {
-                const left = state.repositories[lhs].name.toUpperCase()
-                const right = state.repositories[rhs].name.toUpperCase()
+                const left = state.workspaces[lhs].name.toUpperCase()
+                const right = state.workspaces[rhs].name.toUpperCase()
                 return left < right ? -1 : 0
             })
-            .map((id) => state.repositories[id])
+            .map((id) => state.workspaces[id])
     }
 }
 
 
-export default connect(stateToProps)(RepositoryListContainer)
+export default connect(stateToProps)(WorkspaceListContainer)

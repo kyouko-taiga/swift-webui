@@ -1,19 +1,16 @@
-import { LIST_REPOSITORIES } from '../actions/types'
+import { LIST_WORKSPACES } from '../actions/types'
 
 
-const initialState = {}
-
-
-const repositories = (state = {}, action) => {
+const workspaces = (state = {}, action) => {
     switch (action.type) {
-    case LIST_REPOSITORIES:
+    case LIST_WORKSPACES:
         if ((action.meta.status == 'pending') || !action.payload.entities) {
             return state
         }
 
         return {
             ...state,
-            ...action.payload.entities.repositories,
+            ...action.payload.entities.workspaces,
         }
 
     default:
@@ -21,4 +18,4 @@ const repositories = (state = {}, action) => {
     }
 }
 
-export default repositories
+export default workspaces

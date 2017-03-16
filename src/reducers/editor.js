@@ -2,7 +2,6 @@ import {
     EDITOR_CHANGE_ACTIVE_FILE,
     EDITOR_CLOSE_FILE,
     EDITOR_TOGGLE_DIRECTORY,
-    LIST_FILES
 } from '../actions/types'
 
 

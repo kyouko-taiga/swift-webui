@@ -119,7 +119,7 @@ class EditorContainer extends React.Component {
 
     componentDidMount() {
         this.setState({isFetching: true})
-        this.props.dispatch(listFiles(this.props.repository.id))
+        this.props.dispatch(listFiles(this.props.workspace.id))
             .then((action) => {
                 this.setState({
                     isFetching: false,

@@ -69,7 +69,7 @@ class FileTree extends React.Component {
             <div className="sw-filetree">
                 <div className="sw-filetree-heading">
                     <i className="fa fa-fw fa-code-fork" />
-                    { this.props.repository.name }/{ this.props.repository.activeBranch }
+                    { this.props.workspace.name }/{ this.props.workspace.activeBranch }
                 </div>
                 <ul>
                     {this.makeNodes(this.props.files)}
@@ -93,7 +93,7 @@ function dereferencedArborescence(arborescence, state) {
 }
 
 
-function stateToProps(state, props) {
+function stateToProps(state) {
     return {
         files: dereferencedArborescence(state.arborescence, state),
         openedDirectories: state.editor.openedDirectories,

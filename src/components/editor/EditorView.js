@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import SplitPane from 'react-split-pane'
 
-import { list as listRespositories } from '../../actions/repositories'
+import { list as listRespositories } from '../../actions/workspaces'
 
 import Editor from './Editor'
 import FileTree from './FileTree'
@@ -22,8 +22,8 @@ class EditorView extends React.Component {
             <div className="sw-editor-view">
                 <SplitPane split="horizontal" size={300} primary="second" allowResize={false}>
                     <SplitPane minSize={50} defaultSize={200} split="vertical">
-                        <FileTree repository={this.props.repository} />
-                        <Editor repository={this.props.repository} height={editorHeight} />
+                        <FileTree workspace={this.props.workspace} />
+                        <Editor workspace={this.props.workspace} height={editorHeight} />
                     </SplitPane>
                     <Shell />
                 </SplitPane>
@@ -54,14 +54,14 @@ class EditorViewContainer extends React.Component {
     }
 
     render() {
-        if (this.props.repository) {
+        if (this.props.workspace) {
             return <EditorView {...this.props} />
         } else if (this.state.isFetching) {
             return <p>Loading data ...</p>
         } else if (this.state.error) {
-            return <p>Failed to load the list of repositories.</p>
+            return <p>Failed to load the list of workspaces.</p>
         } else {
-            return <p>Repository not found.</p>
+            return <p>workspace not found.</p>
         }
     }
 
@@ -69,7 +69,7 @@ class EditorViewContainer extends React.Component {
 
 
 function stateToProps(state, props) {
-    return { repository: state.repositories[props.params.repositoryId] }
+    return { workspace: state.workspaces[props.params.workspaceId] }
 }
 
 export default connect(stateToProps)(EditorViewContainer)

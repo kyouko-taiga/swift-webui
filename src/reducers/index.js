@@ -4,7 +4,7 @@ import arborescence from './arborescence'
 import editor from './editor'
 import files from './files'
 import growls from './growls'
-import repositories from './repositories'
+import workspaces from './workspaces'
 
 
 export default combineReducers({
@@ -12,5 +12,5 @@ export default combineReducers({
     editor,
     files,
     growls,
-    repositories,
+    workspaces,
 })
