@@ -25,7 +25,7 @@ class EditorView extends React.Component {
                         <FileTree workspace={this.props.workspace} />
                         <Editor workspace={this.props.workspace} height={editorHeight} />
                     </SplitPane>
-                    <Shell />
+                    <Shell workspace={this.props.workspace} />
                 </SplitPane>
             </div>
         )

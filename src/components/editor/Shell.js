@@ -3,12 +3,22 @@ import React from 'react'
 
 export default class Shell extends React.Component {
 
-    constructor() {
-        super()
+    constructor(props) {
+        super(props)
+
         this.term = null
+        this.socket = null
     }
 
     componentDidMount() {
+        // Connect to the shell server.
+        this.socket = window.io(window.location.origin, {
+            path: '/shell',
+            extraHeaders: {
+                'Streams-Token': this.props.workspace.streams_token,
+            },
+        })
+
         // Choose the storage implementation of hterm.
         window.hterm.defaultStorage = new window.lib.Storage.Local()
 
@@ -26,26 +36,34 @@ export default class Shell extends React.Component {
             let io = this.term.io.push()
 
             io.onVTKeystroke = (str) => {
-                this.term.io.print(str)
+                this.socket.emit('input', str)
             }
 
-            // io.sendString = (str) => {
-            //     // same as 'onVTKeystroke'
-            // }
+            io.sendString = (str) => {
+                this.socket.emit('input', str)
+            }
 
-            this.term.setCursorPosition(0, 0)
-            this.term.setCursorVisible(true)
+            io.onTerminalResize = (columns, rows) => {
+                this.socket.emit('resize', { col: columns, row: rows })
+            }
+
+            this.socket.on('output', (data) => {
+                this.term.io.writeUTF16(data)
+            })
         }
 
         this.term.decorate(this.refs.terminal)
+        this.term.setCursorPosition(0, 0)
+        this.term.setCursorVisible(true)
         this.term.installKeyboard()
     }
 
+    componentWillUnmount() {
+        this.socket.disconnect()
+    }
+
     render() {
-        // console.log(this.props.structure)
-        return (
-            <div ref="terminal" id="terminal" className="sw-shell" />
-        )
+        return <div ref="terminal" id="terminal" className="sw-shell" />
     }
 
 }
