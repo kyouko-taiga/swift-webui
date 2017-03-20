@@ -17,6 +17,12 @@ APPLICATION_NAME = 'umiushi'
 GITHUB_CLIENT_ID = os.environ.get('APPLICATION_ID')
 GITHUB_CLIENT_SECRET = os.environ.get('APPLICATION_SECRET')
 
+# Docker
+DOCKER_IMAGES_ROOT_DIR = os.path.join(basedir, 'umiushi', 'docker_images')
+DOCKER_IMAGES = {
+    'swift': os.path.join(DOCKER_IMAGES_ROOT_DIR, 'swift'),
+}
+
 # Mimetypes
 FILE_EXTENSIONS = {
     '.swift': 'text/x-swift',

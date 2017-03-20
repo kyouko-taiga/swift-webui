@@ -1,9 +1,12 @@
+import docker
 import hashlib
 import magic
 import os
 import shutil
+import time
 
 from flask import Blueprint, abort, current_app, jsonify, request, send_file
+from itsdangerous import JSONWebSignatureSerializer
 from werkzeug.security import safe_join
 
 from umiushi.core.auth import require_auth
@@ -62,7 +65,83 @@ def create_workspace(auth):
 @require_auth
 def get_workspace(auth, workspace_id):
     workspace = fetch_workspace(auth, workspace_id)
-    return jsonify(workspace.to_dict())
+
+    client = docker.from_env()
+    if not client.ping():
+        abort(500)
+
+    # Make sure the shell container is up and running, or created otherwise.
+    try:
+        shell_container = client.containers.get(workspace.shell_container)
+        if shell_container.status in ['paused', 'exited']:
+            shell_container.restart()
+
+    except (docker.errors.NullResource, docker.errors.NotFound):
+        # Create the docker image associated with the workspace's language.
+        image_path = current_app.config['DOCKER_IMAGES'].get(workspace.language)
+        image = client.images.build(path=image_path)
+
+        # Create the docker container.
+        shell_container = client.containers.run(
+            image,
+            publish_all_ports=True,
+            volumes={workspace.root_url: {'bind': '/data', 'mode': 'rw'}},
+            working_dir='/data',
+            privileged=True,
+            detach=True)
+
+        # Store the container's ID.
+        workspace.shell_container = shell_container.id
+        db_session.flush()
+
+    # Wait for the container to be running.
+    # TODO: timeout and error handling
+    while shell_container.status != 'running':
+        time.sleep(1)
+        shell_container = client.containers.get(shell_container.id)
+
+    # Make sure the watch container is up and running, or created it otherwise.
+    try:
+        watch_container = client.containers.get(workspace.watch_container)
+        if watch_container.status in ['paused', 'exited']:
+            watch_container.restart()
+
+    except (docker.errors.NullResource, docker.errors.NotFound):
+        # Create the docker container.
+        watch_container = client.containers.run(
+            'saucisson/ws-inotify',
+            publish_all_ports=True,
+            volumes={workspace.root_url: {'bind': '/data', 'mode': 'rw'}},
+            working_dir='/data',
+            detach=True)
+
+        # Store the container's ID.
+        workspace.watch_container = watch_container.id
+        db_session.flush()
+
+    # Wait for the container to be running.
+    # TODO: timeout and error handling
+    while watch_container.status != 'running':
+        time.sleep(1)
+        watch_container = client.containers.get(watch_container.id)
+
+    db_session.commit()
+
+    # Retrieve the containers' ports.
+    shell_port = shell_container.attrs['NetworkSettings']['Ports']['8080/tcp'][0]['HostPort']
+    watch_port = watch_container.attrs['NetworkSettings']['Ports']['8080/tcp'][0]['HostPort']
+
+    # Generate a signed token containing the adresses of the containers URLs,
+    # so that resty can redirect client's requests to the correct container.
+    signer = JSONWebSignatureSerializer(current_app.config['SECRET_KEY'])
+    streams_token = signer.dumps({
+        'shell': 'localhost:%s/wetty/socket.io' % shell_port,
+        'watch': 'localhost:%s/' % watch_port,
+    })
+
+    workspace_data = workspace.to_dict()
+    workspace_data['streams_token'] = streams_token.decode('utf-8')
+    return jsonify(workspace_data)
 
 
 @bp.route('/workspaces/<workspace_id>', methods=['DELETE'])

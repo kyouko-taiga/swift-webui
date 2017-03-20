@@ -33,8 +33,11 @@ class Workspace(Base, Dictionarizable):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    language = Column(String)
     root_url = Column(String)
+
+    language = Column(String)
+    shell_container = Column(String)
+    watch_container = Column(String)
 
     owner_uid = Column(String, ForeignKey('user.login', ondelete='CASCADE'))
 
