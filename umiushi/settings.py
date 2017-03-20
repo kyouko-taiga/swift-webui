@@ -9,7 +9,7 @@ DATA_ROOT_URL = os.path.join(basedir, 'data')
 SQLALCHEMY_DATABASE_URI = os.environ.get('POSTGRES_URL').replace('tcp://', 'postgresql://')
 
 # Cryptographically signed messages
-SECRET_KEY = 'secret'
+SECRET_KEY = os.environ.get('APPLICATION_SECRET')
 AUTH_TOKEN_DURATION = 86400
 
 # Github
