@@ -9,7 +9,7 @@ import FileTree from './FileTree'
 import Shell from './Shell'
 
 
-const consoleHeight = 300;
+const consoleHeight = 300
 
 
 class EditorView extends React.Component {
