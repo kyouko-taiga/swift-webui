@@ -5,8 +5,6 @@ from werkzeug.wsgi import DispatcherMiddleware
 
 from umiushi import factory
 from umiushi.apps import api, frontend
-from umiushi.core.socketio import socketio
-
 
 class Command():
 
@@ -36,16 +34,11 @@ class Command():
         args = parser.parse_args(self.argv[1:])
 
         if args.subcommand == 'run':
-            app = factory.create_app(__name__)
-
-            # Mount the Flask apps using DispatcherMiddleware.
-            app.wsgi_app = DispatcherMiddleware(
-                frontend.create_app(debug=args.debug),
-                {
+            app = DispatcherMiddleware(
+                frontend.create_app(debug=args.debug), {
                     '/api': api.create_app(debug=args.debug)
                 }
             )
 
-            # Run the server.
-            socketio.init_app(app)
-            socketio.run(app, host=args.host, port=args.port, debug=args.debug)
+            # Run a simple HTTP server with the wsgi application.
+            run_simple(args.host, args.port, app, use_reloader=True, use_debugger=True)

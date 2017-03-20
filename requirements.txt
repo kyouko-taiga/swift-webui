@@ -1,7 +1,5 @@
 docker
-eventlet
 flask
-flask-socketio
 python-magic
 psycopg2
 requests
